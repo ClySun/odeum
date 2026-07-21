@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Odeum — a private theatre experience where you are the protagonist in a dramatic story. Immersive. Theatre. Social." />
+  <meta name="theme-color" content="#f1ece2" />
+  <title>Odeum — A Private Theatre Experience</title>
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="favicon.svg" />
+
+  <!-- Social / SEO. If your live URL is not https://odeum.netlify.app,
+       update the four absolute URLs below (canonical, og:url, og:image, twitter:image). -->
+  <link rel="canonical" href="https://odeum.netlify.app/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Odeum" />
+  <meta property="og:title" content="Odeum — Immersive Theatre for Six" />
+  <meta property="og:description" content="A private theatre experience where you are the protagonist in a dramatic story. You're in the cast." />
+  <meta property="og:url" content="https://odeum.netlify.app/" />
+  <meta property="og:image" content="https://odeum.netlify.app/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Odeum — Immersive Theatre for Six" />
+  <meta name="twitter:description" content="A private theatre experience where you are the protagonist in a dramatic story. You're in the cast." />
+  <meta name="twitter:image" content="https://odeum.netlify.app/og.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- NAV -->
+  <header class="nav" id="nav">
+    <nav class="nav__side nav__side--left" aria-label="Primary">
+      <button class="nav__menu" id="menuBtn" aria-expanded="false" aria-controls="overlay">
+        <span></span><span></span>
+      </button>
+      <a href="#experience" class="nav__link">The Experience</a>
+      <a href="#games" class="nav__link">The Games</a>
+    </nav>
+
+    <a href="#top" class="nav__brand" aria-label="Odeum home">ODEUM</a>
+
+    <div class="nav__side nav__side--right">
+      <a href="#invitation" class="nav__link nav__link--enquire">Apply</a>
+    </div>
+  </header>
+
+  <!-- FULLSCREEN OVERLAY MENU -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <nav class="overlay__nav" aria-label="Overlay">
+      <a href="#experience">The Experience</a>
+      <a href="#games">The Games</a>
+      <a href="#invitation">The Invitation</a>
+    </nav>
+    <p class="overlay__note">A private theatre experience.<br />By invitation only.</p>
+  </div>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero__panels">
+        <figure class="panel" style="--i:0">
+          <img src="images/mirror.webp" alt="Two guests in candlelight before a mirror" loading="eager" />
+          <figcaption class="panel__cap">The Threshold</figcaption>
+        </figure>
+        <figure class="panel" style="--i:1">
+          <img src="images/dinner.jpg" alt="A candlelit table of guests reading their scripts" loading="eager" />
+          <figcaption class="panel__cap">The Table</figcaption>
+        </figure>
+        <figure class="panel" style="--i:2">
+          <img src="images/wine.jpg" alt="Wine poured at an intimate evening" loading="eager" />
+          <figcaption class="panel__cap">The Toast</figcaption>
+        </figure>
+      </div>
+
+      <div class="hero__caption">
+        <p class="hero__eyebrow">Immersive · Theatre · Social</p>
+        <a href="#statement" class="hero__scroll" aria-label="Scroll">
+          <span>Enter</span><span class="hero__scroll-line"></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- STATEMENT -->
+    <section class="statement" id="statement">
+      <p class="statement__lead reveal">
+        A private theatre experience where <em>you</em> are the protagonist
+        in a dramatic story.
+      </p>
+    </section>
+
+    <!-- FULL-BLEED FEATURE -->
+    <section class="feature" aria-label="An evening at Odeum">
+      <img src="images/lounge.jpg" alt="Guests in a richly appointed private lounge" class="feature__img" loading="lazy" />
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="experience" id="experience">
+      <div class="experience__head">
+        <span class="kicker reveal">What is Odeum</span>
+        <h2 class="experience__title reveal">Immersive theatre for six.<br /><em>You're in the cast.</em></h2>
+      </div>
+      <div class="experience__cols">
+        <div class="reveal">
+          <p>
+            Odeum seats six people at a table and gives each of them a character to inhabit:
+            a name, a past, and a reason to be in the room. Actors perform around you, drawing
+            you into the world and guiding what happens next. You talk, befriend, scheme, and
+            make choices in character. This isn't an acting challenge; it's a chance to live
+            inside someone else's wants and fears for a few hours.
+          </p>
+        </div>
+        <div class="reveal">
+          <p class="experience__pull">Think private theatre crossed with a social game like <em>Mafia</em>.</p>
+          <p>
+            The world, the characters, and the story are written for you. The ending isn't.
+            That's for you and your table to decide.
+          </p>
+        </div>
+      </div>
+
+      <ul class="pillars">
+        <li class="reveal">
+          <span class="pillars__num">Immersive</span>
+          <p>You get your own character, not a seat in a crowd. The room becomes another world
+             for three to four hours.</p>
+        </li>
+        <li class="reveal">
+          <span class="pillars__num">Theatre</span>
+          <p>Every story is a full script, written by professional dramatists over months,
+             performed by actors trained to improvise as your choices shape the night.</p>
+        </li>
+        <li class="reveal">
+          <span class="pillars__num">Social</span>
+          <p>You arrive as strangers, and by the end you've explored together the deepest
+             wants and desires of the human experience.</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- GAMES -->
+    <section class="evenings" id="games">
+      <div class="evenings__head">
+        <span class="kicker reveal">Upcoming Games</span>
+        <h2 class="evenings__title reveal">The Repertoire</h2>
+      </div>
+
+      <div class="row row--soon reveal">
+        <figure class="row__media">
+          <img src="images/mirror.webp" alt="Summertime in Prague — a candlelit encounter" loading="lazy" />
+          <figcaption class="row__badge">Coming Soon</figcaption>
+        </figure>
+        <div class="row__text">
+          <span class="row__index">Prague, 1968</span>
+          <h3 class="row__name">Summertime in Prague</h3>
+          <p>A city holds its breath through one golden summer. Over drinks and whispered
+             confidences, you must decide who to trust before the season turns — and what
+             you are willing to give away to stay.</p>
+          <span class="row__meta">Coming Soon · Invitation only</span>
+        </div>
+      </div>
+
+      <div class="row row--reverse row--soon reveal">
+        <figure class="row__media">
+          <img src="images/dinner.jpg" alt="The Republic of Wills — a dramatic candlelit feast" loading="lazy" />
+          <figcaption class="row__badge">Coming Soon</figcaption>
+        </figure>
+        <div class="row__text">
+          <span class="row__index">Rome, 100 BCE</span>
+          <h3 class="row__name">The Republic of Wills</h3>
+          <p>A republic totters at a private banquet of allies and rivals. Every toast is a
+             vote, every confidence a weapon. By dawn, the fate of the city — and your own
+             name — will belong to the room you played.</p>
+          <span class="row__meta">Coming Soon · Invitation only</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- INVITATION / APPLY -->
+    <section class="invitation" id="invitation">
+      <div class="invitation__inner reveal">
+        <span class="kicker">The Invitation</span>
+        <h2 class="invitation__title">Some stories only<br /><em>begin</em> when you arrive.</h2>
+        <p class="invitation__lede">
+          Odeum is testing its first games by private invitation. Leave your name, and we'll
+          send you a few questions — the better to know who you are, and to cast you into the
+          story that fits.
+        </p>
+
+        <form class="invite-form" id="inviteForm" novalidate>
+          <div class="invite-form__row">
+            <input type="text" id="inviteName" name="name" placeholder="Your name" autocomplete="name" aria-label="Your name" required />
+            <input type="email" id="inviteEmail" name="email" placeholder="Email address" autocomplete="email" aria-label="Email address" required />
+            <button type="submit" class="invite-form__submit">Request an invitation</button>
+          </div>
+          <p class="invite-form__note">A short questionnaire follows — it helps us cast you well. No spam, ever.</p>
+          <p class="invite-form__status" id="inviteStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot__top">
+      <a href="#top" class="foot__brand">ODEUM</a>
+      <nav class="foot__links" aria-label="Footer">
+        <a href="#experience">The Experience</a>
+        <a href="#games">The Games</a>
+        <a href="#invitation">Apply</a>
+        <a href="#" aria-label="Odeum on Instagram">Instagram</a>
+      </nav>
+    </div>
+    <div class="foot__bottom">
+      <p>© <span id="year"></span> Odeum</p>
+      <p>A private theatre experience · By invitation</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

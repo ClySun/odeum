@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# Editor / tooling
+.claude/
+
+# Original photo files (kept locally as backups; the site uses the copies in /images)
+/_.webp
+/*.jpeg
