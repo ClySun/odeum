@@ -8,7 +8,7 @@ index.html         The whole page
 css/styles.css     Styling
 js/main.js         Interactions (nav, reveals, invitation form)
 images/            Photography used on the page
-og.png             Social link-preview card (1200×630)
+og.jpg             Social link-preview card (1200×630)
 favicon.svg        Browser-tab icon
 ```
 
