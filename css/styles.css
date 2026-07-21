@@ -427,7 +427,7 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
 .invite-form { max-width: 720px; margin: 2.8rem auto 0; }
 .invite-form__row {
   display: flex; flex-wrap: wrap; gap: 0.75rem;
-  align-items: stretch;
+  align-items: stretch; justify-content: center;
 }
 .invite-form input {
   flex: 1 1 200px;

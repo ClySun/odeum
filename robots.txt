@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://odeum.netlify.app/sitemap.xml
+Sitemap: https://clysun.github.io/odeum/sitemap.xml
