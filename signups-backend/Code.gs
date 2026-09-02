@@ -20,6 +20,7 @@
 var SHEET_NAME = 'Signups';
 var HEADERS = ['Timestamp', 'SlotID', 'Session', 'Character', 'Age', 'Name', 'Email', 'Phone', 'RecommendedBy', 'Status'];
 var OPEN_STATUSES = { '': 1, 'cancelled': 1, 'canceled': 1, 'rejected': 1, 'declined': 1 };
+var NOTIFY_EMAIL = 'sunpuxin@gmail.com'; // a note is emailed here on every new signup
 
 function doGet(e) {
   return json_({ ok: true, slots: takenMap_() });
@@ -57,6 +58,7 @@ function doPost(e) {
       String(p.recommendedBy || ''),
       'Pending'
     ]);
+    notify_(p, name, email);
     return json_({ ok: true, status: 'Pending' });
   } catch (err) {
     return json_({ ok: false, error: 'server' });
@@ -91,6 +93,32 @@ function takenMap_() {
     map[slotId] = status || 'Pending';
   }
   return map;
+}
+
+/** Emails NOTIFY_EMAIL about a new signup. Never blocks the signup if it fails. */
+function notify_(p, name, email) {
+  try {
+    var character = String(p.character || '');
+    var session = String(p.session || '');
+    var body =
+      'New Odeum beta signup (Pending)\n\n' +
+      'Character:   ' + character + '\n' +
+      'Session:     ' + session + '\n' +
+      'Name:        ' + name + '\n' +
+      'Age:         ' + String(p.age || '') + '\n' +
+      'Email:       ' + email + '\n' +
+      'Phone:       ' + String(p.phone || '') + '\n' +
+      'Invited by:  ' + String(p.recommendedBy || '') + '\n\n' +
+      'Confirm or decline by editing the Status column in the sheet.';
+    MailApp.sendEmail({
+      to: NOTIFY_EMAIL,
+      subject: 'New signup: ' + character + ' — ' + session,
+      replyTo: email,
+      body: body
+    });
+  } catch (err) {
+    // Email failed (e.g. quota) — the signup still succeeds.
+  }
 }
 
 function json_(obj) {

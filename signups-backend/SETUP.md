@@ -56,6 +56,19 @@ Paste the Web app URL back in the chat. I'll plug it into the page and publish �
   The slot returns to **Open** for others within a minute.
 - Leaving a row as `Pending` keeps the slot held (shown as Pending) but not yet officially taken.
 
+## Email notifications on every signup
+The script emails **sunpuxin@gmail.com** each time someone requests a seat (name, character,
+session, age, email, phone, who invited them). To turn this on, you must update the deployed script:
+
+1. **Extensions → Apps Script**, replace the code with the latest [`Code.gs`](Code.gs).
+2. Open **`appsscript.json`** and make sure `oauthScopes` matches [`appsscript.json`](appsscript.json)
+   here — it now also includes `.../auth/script.send_mail`.
+3. **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy.**
+4. Re-authorize when prompted — you'll see a new permission to **send email as you**. Approve it.
+
+(Change the address by editing `NOTIFY_EMAIL` at the top of `Code.gs`. Gmail's free send limit is
+~100 emails/day, which is plenty for a beta.)
+
 ## If you change the script later
 Redeploy with **Deploy → Manage deployments → Edit (✏️) → Version: New version → Deploy**
 so changes take effect. The URL stays the same.

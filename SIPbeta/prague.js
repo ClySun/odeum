@@ -278,8 +278,8 @@
       msg.textContent = "Thanks, " + first + " — this is a preview, so nothing was recorded yet. " +
         "Once the sheet is connected, this sends your request for real.";
     } else {
-      msg.textContent = "Thanks, " + first + " — your seat is held as pending. We'll confirm by email, " +
-        "then send your character dossier and the address.";
+      msg.textContent = "Thanks, " + first + ". Your seat is being held pending confirmation. " +
+        "We'll confirm by email and send more details soon.";
     }
   }
 
