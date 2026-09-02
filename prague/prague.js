@@ -8,9 +8,8 @@
      CONFIG
      --------------------------------------------------------- */
 
-  // Paste the Google Apps Script Web-app URL here once deployed (see signups-backend/SETUP.md).
-  // While empty, the page runs in PREVIEW mode: nothing is recorded.
-  var SCRIPT_URL = "";
+  // Google Apps Script Web-app URL (writes to the Prague signups Google Sheet).
+  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyR83a0vBQlhoPWsqm3IjfMQJZsTU-p0B9q7x8SYYPAZ-6oMvO_UjB0qnxVjfTlwMgm/exec";
 
   // The six PLAYER characters. (Jana & Pavel are DM characters, not player-filled.)
   // TODO: taglines are placeholders — replace with the real one-liners.
