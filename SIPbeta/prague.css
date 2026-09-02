@@ -192,6 +192,10 @@
   line-height: 1.65; margin-bottom: 0.9rem; max-width: 68ch;
 }
 .qa__body p:last-child { margin-bottom: 0; }
+.pqa__note {
+  margin-top: 1.6rem; color: rgba(241, 236, 226, 0.6);
+  font-size: 0.95rem; line-height: 1.6;
+}
 
 /* ---------- RESERVE / SESSIONS ---------- */
 .preserve { background: var(--ink); color: var(--paper); padding: clamp(4.5rem, 12vh, 8rem) clamp(1.25rem, 5vw, 3.5rem); }
