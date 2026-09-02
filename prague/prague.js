@@ -11,15 +11,22 @@
   // Google Apps Script Web-app URL (writes to the Prague signups Google Sheet).
   var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyR83a0vBQlhoPWsqm3IjfMQJZsTU-p0B9q7x8SYYPAZ-6oMvO_UjB0qnxVjfTlwMgm/exec";
 
-  // The six PLAYER characters. (Jana & Pavel are DM characters, not player-filled.)
-  // TODO: taglines are placeholders — replace with the real one-liners.
+  // The six PLAYER characters, ordered so couples sit together.
+  // (Jana & Pavel are DM characters, not player-filled.)
   var CHARACTERS = [
-    { id: "vera",   name: "Vera",   art: "../images/prague/cast/vera.jpg",   tagline: "The drummer — her band keeps landing on the wrong lists." },
-    { id: "milan",  name: "Milan",  art: "../images/prague/cast/milan.jpg",  tagline: "The firebrand writer: long on conviction, short on caution." },
-    { id: "vaclav", name: "Vaclav", art: "../images/prague/cast/vaclav.jpg", tagline: "The steady hand who has seen which way these things go." },
-    { id: "eva",    name: "Eva",    art: "../images/prague/cast/eva.jpg",    tagline: "She knows everyone — and what they'd rather keep hidden." },
-    { id: "petra",  name: "Petra",  art: "../images/prague/cast/petra.jpg",  tagline: "New to the magazine, and watching everything." },
-    { id: "tomas",  name: "Tomas",  art: "../images/prague/cast/tomas.jpg",  tagline: "Loyal to the work — but to whom, exactly?" }
+    { id: "eva",    name: "Eva",    art: "../images/prague/cast/eva.jpg",    tagline: "Writes art and culture critiques. Speaks three languages. An exemplary human being." },
+    { id: "vaclav", name: "Vaclav", art: "../images/prague/cast/vaclav.jpg", tagline: "Writes poetry. Full of charm. The world is a bit dreamier in his eyes." },
+    { id: "milan",  name: "Milan",  art: "../images/prague/cast/milan.jpg",  tagline: "Writes absurdist stories. Loves wandering around cemeteries at the outskirts of the city." },
+    { id: "vera",   name: "Vera",   art: "../images/prague/cast/vera.jpg",   tagline: "Writes about Prague’s rock music scene. A drummer. Might seem hard to approach at first." },
+    { id: "tomas",  name: "Tomas",  art: "../images/prague/cast/tomas.jpg",  tagline: "Manages the academic analysis section. A literature teacher who inspires his students by sneaking them copies of banned books." },
+    { id: "petra",  name: "Petra",  art: "../images/prague/cast/petra.jpg",  tagline: "Manages the theatre section. Director of her own theatre. Lovingly described by her troupe as “small but mighty.”" }
+  ];
+
+  // Romantic pairings — couples sit together in the strip, joined by a labelled line.
+  var PAIRS = [
+    { ids: ["eva", "vaclav"], status: "Married" },
+    { ids: ["milan", "vera"],  status: "Dating" },
+    { ids: ["tomas", "petra"], status: "Married with kids" }
   ];
 
   // Upcoming sessions.  TODO: confirm final location wording.
@@ -59,17 +66,35 @@
   /* ---------------------------------------------------------
      RENDER: cast gallery
      --------------------------------------------------------- */
+  function charById(id) {
+    for (var i = 0; i < CHARACTERS.length; i++) { if (CHARACTERS[i].id === id) return CHARACTERS[i]; }
+    return null;
+  }
+
   function renderCast() {
     if (!castGrid) return;
     castGrid.innerHTML = "";
-    CHARACTERS.forEach(function (c) {
-      var card = document.createElement("article");
-      card.className = "castcard reveal is-in";
-      card.innerHTML =
-        '<div class="castcard__art"><img src="' + c.art + '" alt="Character portrait of ' + c.name + '" loading="lazy" /></div>' +
-        '<h3 class="castcard__name">' + c.name + "</h3>" +
-        '<p class="castcard__line">' + c.tagline + "</p>";
-      castGrid.appendChild(card);
+    PAIRS.forEach(function (p) {
+      var pair = document.createElement("div");
+      pair.className = "castpair";
+      var row = document.createElement("div");
+      row.className = "castpair__row";
+      p.ids.forEach(function (id) {
+        var c = charById(id); if (!c) return;
+        var card = document.createElement("article");
+        card.className = "castcard";
+        card.innerHTML =
+          '<div class="castcard__art"><img src="' + c.art + '" alt="Character portrait of ' + c.name + '" loading="lazy" /></div>' +
+          '<h3 class="castcard__name">' + c.name + "</h3>" +
+          '<p class="castcard__line">' + c.tagline + "</p>";
+        row.appendChild(card);
+      });
+      pair.appendChild(row);
+      var bond = document.createElement("div");
+      bond.className = "castpair__bond";
+      bond.innerHTML = '<span class="castpair__label"><span class="castpair__heart">♥</span> ' + p.status + "</span>";
+      pair.appendChild(bond);
+      castGrid.appendChild(pair);
     });
   }
 
@@ -79,9 +104,9 @@
     var next = document.getElementById("castNext");
     if (!grid || !prev || !next) return;
     var step = function () {
-      var card = grid.querySelector(".castcard");
-      var w = card ? card.getBoundingClientRect().width : 240;
-      return Math.round((w + 20) * 1.5);
+      var pair = grid.querySelector(".castpair");
+      var w = pair ? pair.getBoundingClientRect().width : 400;
+      return Math.round(w + 40);
     };
     var update = function () {
       prev.disabled = grid.scrollLeft <= 2;
@@ -234,7 +259,7 @@
         }
       })
       .catch(function () {
-        modalStatus.textContent = "Something went wrong — please try again, or email hello@odeum.theatre.";
+        modalStatus.textContent = "Something went wrong — please try again, or email sunpuxin@gmail.com.";
         submitBtn.disabled = false;
         submitBtn.textContent = "Send my request";
       });

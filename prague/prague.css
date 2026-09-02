@@ -97,14 +97,22 @@
 
 /* Horizontal scroll strip — shows ~3+ cards, swipe/arrows to see the rest */
 .pcast__grid {
-  display: flex; gap: clamp(0.8rem, 2vw, 1.35rem);
+  display: flex; gap: clamp(1.6rem, 3.5vw, 3rem);
   overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch; padding: 0.25rem 0 0.9rem;
   scrollbar-width: thin; scrollbar-color: rgba(241,236,226,0.3) transparent;
 }
 .pcast__grid::-webkit-scrollbar { height: 6px; }
 .pcast__grid::-webkit-scrollbar-thumb { background: rgba(241,236,226,0.25); border-radius: 3px; }
-.castcard { flex: 0 0 clamp(188px, 25vw, 248px); scroll-snap-align: start; }
+
+/* A couple = two cards side by side, joined by a labelled line */
+.castpair { flex: 0 0 auto; scroll-snap-align: start; display: flex; flex-direction: column; }
+.castpair__row { display: flex; gap: clamp(0.5rem, 1.2vw, 0.85rem); }
+.castcard { flex: 0 0 clamp(160px, 20vw, 205px); }
+.castpair__bond { display: flex; align-items: center; gap: 0.8rem; margin-top: 1rem; }
+.castpair__bond::before, .castpair__bond::after { content: ""; flex: 1; height: 1px; background: rgba(241, 236, 226, 0.22); }
+.castpair__label { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(241, 236, 226, 0.7); white-space: nowrap; }
+.castpair__heart { color: #cc8a80; }
 .castcard__art {
   aspect-ratio: 3 / 4; overflow: hidden; border-radius: 10px;
   background: rgba(241,236,226,0.06); box-shadow: 0 16px 40px -28px rgba(0,0,0,0.6);
@@ -282,3 +290,40 @@
 .pfoot p { color: rgba(241, 236, 226, 0.5); }
 .pfoot a { color: rgba(241, 236, 226, 0.82); border-bottom: 1px solid rgba(241, 236, 226, 0.28); }
 .pfoot a:hover { color: #d8b877; border-bottom-color: #d8b877; }
+
+/* ---------- BEHIND ODEUM ---------- */
+.pabout {
+  border-top: 1px solid rgba(241, 236, 226, 0.12);
+  padding: clamp(4rem, 11vh, 7rem) clamp(1.25rem, 5vw, 3.5rem);
+  text-align: center;
+}
+.pabout__inner { max-width: 620px; margin: 0 auto; }
+.pabout__sun { color: #d8b877; margin-bottom: 1.4rem; opacity: 0.9; }
+.pabout .kicker { color: rgba(241, 236, 226, 0.55); }
+.pabout__name {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.02em; margin: 0.9rem 0 0.4rem;
+}
+.pabout__role {
+  font-size: 0.74rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(241, 236, 226, 0.6); margin-bottom: 1.8rem;
+}
+.pabout__bio p {
+  color: rgba(241, 236, 226, 0.74); font-size: clamp(1rem, 1.3vw, 1.12rem);
+  line-height: 1.7; margin-bottom: 1.1rem;
+}
+.pabout__bio p:last-child { margin-bottom: 0; }
+.pabout__contact {
+  display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; margin-top: 2.2rem;
+}
+.pabout__btn {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.7rem 1.3rem; border-radius: 100px;
+  border: 1px solid rgba(241, 236, 226, 0.28); color: rgba(241, 236, 226, 0.85);
+  font-size: 0.9rem; letter-spacing: 0.02em;
+  transition: background 0.35s var(--ease), color 0.35s var(--ease), border-color 0.35s var(--ease), transform 0.35s var(--ease);
+}
+.pabout__btn svg { flex-shrink: 0; }
+.pabout__btn:hover {
+  background: var(--paper); color: var(--ink); border-color: var(--paper); transform: translateY(-2px);
+}
