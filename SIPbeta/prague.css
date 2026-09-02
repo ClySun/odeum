@@ -341,3 +341,43 @@
   .pabout__contact { justify-content: center; }
   .pabout__bio { text-align: left; }
 }
+
+/* =========================================================
+   MOBILE REFINEMENTS (do not affect desktop spacing)
+   ========================================================= */
+@media (max-width: 640px) {
+  /* Hero: shift crop right to reveal her face; stronger tint behind the words */
+  .phero__img { object-position: 64% center; }
+  .phero__scrim {
+    background: linear-gradient(180deg,
+      rgba(15,11,8,0.5) 0%,
+      rgba(15,11,8,0.12) 26%,
+      rgba(15,11,8,0.45) 54%,
+      rgba(15,11,8,0.9) 80%,
+      rgba(15,11,8,0.95) 100%);
+  }
+
+  /* Gallery: pull the confrontation photo left to show the full figure */
+  .pgallery__wide img { object-position: 22% center; }
+
+  /* Cast: stack couples vertically (no sideways scroll) */
+  .pcast__grid {
+    flex-direction: column; overflow-x: visible; scroll-snap-type: none;
+    gap: 2.4rem; padding-bottom: 0;
+  }
+  .castpair { width: 100%; scroll-snap-align: none; }
+  .castcard { flex: 1 1 0; min-width: 0; }
+  .castcard__name { font-size: 1.15rem; }
+  .castcard__line { font-size: 0.82rem; }
+
+  /* Reserve: compact one-line rows so the list is much shorter */
+  .slots { grid-template-columns: 1fr; gap: 0.5rem; }
+  .slot {
+    flex-direction: row; align-items: center; justify-content: space-between;
+    gap: 0.75rem; padding: 0.75rem 0.6rem 0.75rem 1rem; min-height: 0;
+  }
+  .slot__name { font-size: 1.05rem; margin: 0; }
+  .slot__state { display: none; }
+  .slot__row { margin-top: 0; flex: 0 0 auto; }
+  .slot__btn { padding: 0.55rem 1rem; }
+}
