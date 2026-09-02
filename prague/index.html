@@ -65,18 +65,6 @@
       </div>
     </section>
 
-    <!-- CAST -->
-    <section class="pcast" id="cast">
-      <div class="pcast__head">
-        <span class="kicker reveal">The cast</span>
-        <h2 class="pcast__title reveal">Choose your character</h2>
-        <p class="pcast__sub reveal">Six players, six roles at one table. Meet them below, then request your seat. (Two more — Jana and Pavel — are played by our company.)</p>
-      </div>
-      <div class="pcast__grid" id="castGrid">
-        <!-- rendered by prague.js -->
-      </div>
-    </section>
-
     <!-- GALLERY -->
     <section class="pgallery" aria-label="From the room">
       <figure class="pgallery__wide reveal">
@@ -85,8 +73,22 @@
       <div class="pgallery__grid">
         <figure class="reveal"><img src="../images/prague/whiteboard.jpg" alt="A character studies a timeline of the day's events" loading="lazy" /></figure>
         <figure class="reveal"><img src="../images/prague/huddle.jpg" alt="Players conferring in lamplight" loading="lazy" /></figure>
-        <figure class="reveal"><img src="../images/prague/couch.jpg" alt="A quiet, tense conversation on a sofa" loading="lazy" /></figure>
+        <figure class="reveal"><img src="../images/prague/the-room.jpg" alt="The full table mid-game" loading="lazy" /></figure>
         <figure class="reveal"><img src="../images/prague/scripts.jpg" alt="Guests comparing notes and scripts" loading="lazy" /></figure>
+      </div>
+    </section>
+
+    <!-- CAST -->
+    <section class="pcast" id="cast">
+      <div class="pcast__head">
+        <span class="kicker reveal">The cast</span>
+        <h2 class="pcast__title reveal">Choose your character</h2>
+        <p class="pcast__sub reveal">Six players, six roles at one table. Scroll through them, then request your seat below. (Jana and Pavel are played by our company.)</p>
+      </div>
+      <div class="pcast__strip reveal">
+        <button class="pcast__arrow pcast__arrow--prev" id="castPrev" type="button" aria-label="Previous characters">‹</button>
+        <div class="pcast__grid" id="castGrid" role="list"><!-- rendered by prague.js --></div>
+        <button class="pcast__arrow pcast__arrow--next" id="castNext" type="button" aria-label="More characters">›</button>
       </div>
     </section>
 

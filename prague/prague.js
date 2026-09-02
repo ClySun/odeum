@@ -72,6 +72,27 @@
     });
   }
 
+  function setupCastStrip() {
+    var grid = castGrid;
+    var prev = document.getElementById("castPrev");
+    var next = document.getElementById("castNext");
+    if (!grid || !prev || !next) return;
+    var step = function () {
+      var card = grid.querySelector(".castcard");
+      var w = card ? card.getBoundingClientRect().width : 240;
+      return Math.round((w + 20) * 1.5);
+    };
+    var update = function () {
+      prev.disabled = grid.scrollLeft <= 2;
+      next.disabled = grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 2;
+    };
+    prev.addEventListener("click", function () { grid.scrollBy({ left: -step(), behavior: "smooth" }); });
+    next.addEventListener("click", function () { grid.scrollBy({ left: step(), behavior: "smooth" }); });
+    grid.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+  }
+
   /* ---------------------------------------------------------
      RENDER: sessions + slots
      --------------------------------------------------------- */
@@ -248,5 +269,6 @@
   }
 
   renderCast();
+  setupCastStrip();
   loadAvailability();
 })();
