@@ -14,6 +14,18 @@ into your sheet, and no two people can take the same cast slot.
    [`Code.gs`](Code.gs) from this folder.
 3. Click the **Save** icon (💾).
 
+## 2b. Limit permissions to THIS sheet only (important)
+By default Google asks for access to *all* your spreadsheets. Narrow it to just this one:
+1. Click the **⚙ Project Settings** (gear, left sidebar) → tick
+   **"Show 'appsscript.json' manifest file in editor."**
+2. Back in the **Editor** (`< >`), open **`appsscript.json`** and add an `oauthScopes` line so it
+   matches [`appsscript.json`](appsscript.json) in this folder — the key line is:
+   ```json
+   "oauthScopes": ["https://www.googleapis.com/auth/spreadsheets.currentonly"],
+   ```
+   (Keep your existing `timeZone`.) **Save.**
+   Now the consent screen will only grant access to *this* spreadsheet.
+
 ## 3. Deploy it as a web app
 1. Top right: **Deploy → New deployment**.
 2. Click the gear next to "Select type" → choose **Web app**.
