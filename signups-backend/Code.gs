@@ -95,6 +95,19 @@ function takenMap_() {
   return map;
 }
 
+/**
+ * RUN THIS ONCE to grant the "send email" permission and verify notifications.
+ * In the editor: pick "testNotify" in the function dropdown → Run → approve the prompts.
+ * You should then receive a test email at NOTIFY_EMAIL.
+ */
+function testNotify() {
+  MailApp.sendEmail({
+    to: NOTIFY_EMAIL,
+    subject: 'Odeum — signup notifications are on',
+    body: 'This is a test. If you received this, new signups will now email you here.'
+  });
+}
+
 /** Emails NOTIFY_EMAIL about a new signup. Never blocks the signup if it fails. */
 function notify_(p, name, email) {
   try {

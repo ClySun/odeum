@@ -64,7 +64,10 @@ session, age, email, phone, who invited them). To turn this on, you must update 
 2. Open **`appsscript.json`** and make sure `oauthScopes` matches [`appsscript.json`](appsscript.json)
    here — it now also includes `.../auth/script.send_mail`.
 3. **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy.**
-4. Re-authorize when prompted — you'll see a new permission to **send email as you**. Approve it.
+4. **Grant the email permission by running a function once** (deploying alone doesn't prompt for it):
+   in the editor, pick **`testNotify`** in the function dropdown at the top, click **Run**, and approve
+   the prompts — this time you'll see **"Send email as you."** Approve it. A test email arrives at
+   NOTIFY_EMAIL, and real signups will email you from then on. (No new deployment needed after this.)
 
 (Change the address by editing `NOTIFY_EMAIL` at the top of `Code.gs`. Gmail's free send limit is
 ~100 emails/day, which is plenty for a beta.)
