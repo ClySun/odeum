@@ -398,6 +398,12 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
   color: var(--ink-faint);
 }
 
+/* Clickable game card (links to the beta page) */
+.row--link { cursor: pointer; transition: border-color 0.4s var(--ease); }
+.row--link .row__meta { color: var(--wine); transition: color 0.3s var(--ease); }
+.row--link:hover .row__name { color: var(--wine); }
+.row--link:hover .row__media img { transform: scale(1.05); }
+
 /* =========================================================
    INVITATION
    ========================================================= */
