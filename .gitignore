@@ -7,3 +7,6 @@
 # Original photo files (kept locally as backups; the site uses the copies in /images)
 /_.webp
 /*.jpeg
+
+# Original character art PNGs (kept locally; web uses the JPGs in images/prague/cast)
+/Character art/

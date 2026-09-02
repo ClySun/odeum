@@ -2,24 +2,27 @@
  * Odeum — "Summertime in Prague" beta signups
  * Google Apps Script backend (bound to a Google Sheet).
  *
- * What it does:
- *  - GET  -> returns the list of slots already taken (so the page can show Full/Open live)
- *  - POST -> tries to claim one slot for one person. Uses a script lock so two people
- *            submitting at the same instant can't both take the same slot. If the slot
- *            was taken a moment earlier, it politely refuses.
+ * Flow: a guest sends a REQUEST for one character on one session.
+ *   - GET  -> returns each taken slot and its status, so the page can show Open / Pending / Taken
+ *   - POST -> records a request as "Pending" (with a script lock so a slot can't be double-requested)
  *
- * A "slot" is one character on one session, identified by slotId = "<session>|<character>".
- * To CANCEL a signup and reopen the slot: in the Sheet, set that row's Status to
- * "Cancelled" (or delete the row). The slot becomes available again immediately.
+ * A "slot" is one character on one session: slotId = "<session>|<character>".
+ * The slot locks the moment someone requests it (status Pending), so no one else can request it.
+ *
+ * YOU confirm requests by hand in the sheet:
+ *   - set Status to "Confirmed" to mark the spot as officially taken, or
+ *   - set Status to "Cancelled" (or "Rejected") to REOPEN the slot for others.
+ * Anything that isn't Cancelled/Rejected/Declined/blank keeps the slot closed.
  *
  * Setup steps are in SETUP.md.
  */
 
 var SHEET_NAME = 'Signups';
-var HEADERS = ['Timestamp', 'SlotID', 'Session', 'Character', 'Name', 'Email', 'Phone', 'RecommendedBy', 'Status'];
+var HEADERS = ['Timestamp', 'SlotID', 'Session', 'Character', 'Age', 'Name', 'Email', 'Phone', 'RecommendedBy', 'Status'];
+var OPEN_STATUSES = { '': 1, 'cancelled': 1, 'canceled': 1, 'rejected': 1, 'declined': 1 };
 
 function doGet(e) {
-  return json_({ ok: true, taken: Array.from(takenSet_()) });
+  return json_({ ok: true, slots: takenMap_() });
 }
 
 function doPost(e) {
@@ -33,13 +36,13 @@ function doPost(e) {
 
   var lock = LockService.getScriptLock();
   try {
-    lock.waitLock(20000); // wait up to 20s for any other submission to finish
+    lock.waitLock(20000);
   } catch (err) {
     return json_({ ok: false, error: 'busy' });
   }
 
   try {
-    if (takenSet_().has(slotId)) {
+    if (takenMap_().hasOwnProperty(slotId)) {
       return json_({ ok: false, error: 'taken' });
     }
     sheet_().appendRow([
@@ -47,13 +50,14 @@ function doPost(e) {
       slotId,
       String(p.session || ''),
       String(p.character || ''),
+      String(p.age || ''),
       name,
       email,
       String(p.phone || ''),
       String(p.recommendedBy || ''),
-      'Confirmed'
+      'Pending'
     ]);
-    return json_({ ok: true });
+    return json_({ ok: true, status: 'Pending' });
   } catch (err) {
     return json_({ ok: false, error: 'server' });
   } finally {
@@ -74,17 +78,19 @@ function sheet_() {
   return sh;
 }
 
-function takenSet_() {
+/** Returns { slotId: "Pending" | "Confirmed" | ... } for every slot that is NOT open. */
+function takenMap_() {
   var sh = sheet_();
   var values = sh.getDataRange().getValues();
-  var set = {};
-  var out = new Set();
+  var map = {};
   for (var i = 1; i < values.length; i++) {
     var slotId = String(values[i][1] || '').trim();
-    var status = String(values[i][8] || '').toLowerCase();
-    if (slotId && status !== 'cancelled') out.add(slotId);
+    var status = String(values[i][9] || '').trim();
+    if (!slotId) continue;
+    if (OPEN_STATUSES[status.toLowerCase()]) continue; // cancelled/rejected/blank -> open
+    map[slotId] = status || 'Pending';
   }
-  return out;
+  return map;
 }
 
 function json_(obj) {

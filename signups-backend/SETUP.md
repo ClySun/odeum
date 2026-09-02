@@ -32,10 +32,18 @@ Paste the Web app URL back in the chat. I'll plug it into the page and publish �
 
 ---
 
-## Managing signups afterwards
-- Every confirmed signup appears as a row in the **Signups** tab (name, email, phone, who
-  recommended them, which character, which session).
-- **To cancel someone and reopen their slot:** change that row's **Status** cell from
-  `Confirmed` to `Cancelled` (or delete the row). The slot shows as Open again within a minute.
-- **If you change the script later:** redeploy with **Deploy → Manage deployments → Edit (✏️)
-  → Version: New version → Deploy** so the changes take effect. (The URL stays the same.)
+## How requests work
+- A guest **requests** a character on a session. The row is logged with **Status = `Pending`**,
+  and that slot immediately shows as **Pending** on the site — no one else can request it.
+- Each row records: Timestamp, Session, Character, **Age**, Name, Email, Phone, RecommendedBy, Status.
+
+## Managing requests (your side, in the sheet)
+- **To approve someone:** change their row's **Status** from `Pending` to **`Confirmed`**.
+  The site then shows that slot as **Taken**.
+- **To decline / free the slot:** set **Status** to **`Cancelled`** (or `Rejected`), or delete the row.
+  The slot returns to **Open** for others within a minute.
+- Leaving a row as `Pending` keeps the slot held (shown as Pending) but not yet officially taken.
+
+## If you change the script later
+Redeploy with **Deploy → Manage deployments → Edit (✏️) → Version: New version → Deploy**
+so changes take effect. The URL stays the same.

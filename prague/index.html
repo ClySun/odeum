@@ -65,6 +65,18 @@
       </div>
     </section>
 
+    <!-- CAST -->
+    <section class="pcast" id="cast">
+      <div class="pcast__head">
+        <span class="kicker reveal">The cast</span>
+        <h2 class="pcast__title reveal">Choose your character</h2>
+        <p class="pcast__sub reveal">Six players, six roles at one table. Meet them below, then request your seat. (Two more — Jana and Pavel — are played by our company.)</p>
+      </div>
+      <div class="pcast__grid" id="castGrid">
+        <!-- rendered by prague.js -->
+      </div>
+    </section>
+
     <!-- GALLERY -->
     <section class="pgallery" aria-label="From the room">
       <figure class="pgallery__wide reveal">
@@ -84,7 +96,7 @@
       <ul class="pknow__list">
         <li class="reveal"><h3>No acting experience needed</h3><p>You'll get a full character dossier in advance. Come as yourself, in your character's shoes.</p></li>
         <li class="reveal"><h3>Six players a night</h3><p>An intimate cast of strangers. You'll leave having conspired, argued, and confided together.</p></li>
-        <li class="reveal"><h3>About three to four hours</h3><p>One evening, one continuous world. Light refreshments provided.</p></li>
+        <li class="reveal"><h3>An evening, 6–11 pm</h3><p>Four hours of game, plus an hour of setup and debrief. Light refreshments provided.</p></li>
         <li class="reveal"><h3>It's a beta</h3><p>You're among the very first to play. We'll ask for your honest notes afterwards.</p></li>
       </ul>
     </section>
@@ -93,8 +105,8 @@
     <section class="preserve" id="reserve">
       <div class="preserve__head">
         <span class="kicker reveal">Reserve a seat</span>
-        <h2 class="preserve__title reveal">Choose a date &amp; your character</h2>
-        <p class="preserve__sub reveal">Each character can be played by one guest. Once a seat is taken, it closes — so pick early.</p>
+        <h2 class="preserve__title reveal">Request a date &amp; your character</h2>
+        <p class="preserve__sub reveal">Send a request for a character on a date. It holds the seat as <em>pending</em> while we confirm you by email — so no one else can take it. Each character seats one guest.</p>
       </div>
       <div id="sessions" class="sessions" aria-live="polite">
         <!-- rendered by prague.js -->
@@ -114,17 +126,23 @@
     <div class="modal__card" role="document">
       <button class="modal__close" data-close aria-label="Close">×</button>
       <div id="modalForm">
-        <p class="modal__eyebrow">Reserve your seat</p>
-        <h3 class="modal__title" id="modalTitle">Milan Novak</h3>
-        <p class="modal__slot" id="modalSlot">Friday 26 September · 7:00 PM</p>
+        <p class="modal__eyebrow">Request a seat</p>
+        <h3 class="modal__title" id="modalTitle">Milan</h3>
+        <p class="modal__slot" id="modalSlot">Saturday 26 September · 6–11 PM</p>
         <form id="signupForm" novalidate>
           <div class="pfield">
             <label for="f-name">Full name</label>
             <input type="text" id="f-name" name="name" autocomplete="name" required />
           </div>
-          <div class="pfield">
-            <label for="f-email">Email</label>
-            <input type="email" id="f-email" name="email" autocomplete="email" required />
+          <div class="pfield pfield--row">
+            <div>
+              <label for="f-email">Email</label>
+              <input type="email" id="f-email" name="email" autocomplete="email" required />
+            </div>
+            <div>
+              <label for="f-age">Age</label>
+              <input type="number" id="f-age" name="age" min="16" max="120" inputmode="numeric" required />
+            </div>
           </div>
           <div class="pfield">
             <label for="f-phone">Phone</label>
@@ -134,13 +152,13 @@
             <label for="f-rec">Who recommended you?</label>
             <input type="text" id="f-rec" name="recommendedBy" placeholder="A name helps us keep the room trusted" />
           </div>
-          <button type="submit" class="pbtn pbtn--dark" id="submitBtn">Confirm my seat</button>
+          <button type="submit" class="pbtn pbtn--dark" id="submitBtn">Send my request</button>
           <p class="modal__status" id="modalStatus" role="status" aria-live="polite"></p>
         </form>
       </div>
       <div id="modalDone" class="modal__done" hidden>
-        <h3 class="modal__title">You're in.</h3>
-        <p id="doneMsg">Your seat is reserved. We'll be in touch by email with your character dossier and the address.</p>
+        <h3 class="modal__title">Request received.</h3>
+        <p id="doneMsg">Your seat is held as pending. We'll confirm by email — and send your character dossier and the address once you're in.</p>
         <button class="pbtn pbtn--dark" data-close>Close</button>
       </div>
     </div>

@@ -9,32 +9,35 @@
      --------------------------------------------------------- */
 
   // Paste the Google Apps Script Web-app URL here once deployed (see signups-backend/SETUP.md).
-  // While this is empty, the page runs in PREVIEW mode: nothing is recorded.
+  // While empty, the page runs in PREVIEW mode: nothing is recorded.
   var SCRIPT_URL = "";
 
-  // The six characters. (Surnames for Tomáš / Jana / Petra to be confirmed.)
+  // The six PLAYER characters. (Jana & Pavel are DM characters, not player-filled.)
+  // TODO: taglines are placeholders — replace with the real one-liners.
   var CHARACTERS = [
-    { id: "milan", name: "Milan Novak" },
-    { id: "vera",  name: "Vera Veselá" },
-    { id: "eva",   name: "Eva Maršová" },
-    { id: "tomas", name: "Tomáš" },
-    { id: "jana",  name: "Jana" },
-    { id: "petra", name: "Petra" }
+    { id: "vera",   name: "Vera",   art: "../images/prague/cast/vera.jpg",   tagline: "The drummer — her band keeps landing on the wrong lists." },
+    { id: "milan",  name: "Milan",  art: "../images/prague/cast/milan.jpg",  tagline: "The firebrand writer: long on conviction, short on caution." },
+    { id: "vaclav", name: "Vaclav", art: "../images/prague/cast/vaclav.jpg", tagline: "The steady hand who has seen which way these things go." },
+    { id: "eva",    name: "Eva",    art: "../images/prague/cast/eva.jpg",    tagline: "She knows everyone — and what they'd rather keep hidden." },
+    { id: "petra",  name: "Petra",  art: "../images/prague/cast/petra.jpg",  tagline: "New to the magazine, and watching everything." },
+    { id: "tomas",  name: "Tomas",  art: "../images/prague/cast/tomas.jpg",  tagline: "Loyal to the work — but to whom, exactly?" }
   ];
 
-  // Upcoming sessions. PLACEHOLDER DATES — replace with the real schedule.
+  // Upcoming sessions.  TODO: confirm final location wording.
   var SESSIONS = [
-    { id: "s1", date: "Friday 25 September 2026",   time: "7:00 PM", place: "Downtown loft · address on confirmation" },
-    { id: "s2", date: "Saturday 26 September 2026", time: "7:00 PM", place: "Downtown loft · address on confirmation" }
+    { id: "s1", date: "Saturday 26 September 2026", time: "6:00–11:00 PM", place: "Location shared on confirmation" },
+    { id: "s2", date: "Sunday 27 September 2026",   time: "6:00–11:00 PM", place: "Location shared on confirmation" },
+    { id: "s3", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Location shared on confirmation" }
   ];
 
   /* ---------------------------------------------------------
      STATE + ELEMENTS
      --------------------------------------------------------- */
-  var taken = new Set();
-  var selected = null; // { session, character }
+  var statusMap = {}; // slotId -> "Pending" | "Confirmed" | ...
+  var selected = null;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  var castGrid = document.getElementById("castGrid");
   var sessionsEl = document.getElementById("sessions");
   var modal = document.getElementById("modal");
   var modalTitle = document.getElementById("modalTitle");
@@ -46,14 +49,36 @@
   var submitBtn = document.getElementById("submitBtn");
 
   var slotId = function (s, c) { return s.id + "|" + c.id; };
+  var stateOf = function (id) {
+    var st = statusMap[id];
+    if (!st) return "open";
+    return (String(st).toLowerCase() === "confirmed") ? "taken" : "pending";
+  };
 
   /* ---------------------------------------------------------
-     RENDER
+     RENDER: cast gallery
+     --------------------------------------------------------- */
+  function renderCast() {
+    if (!castGrid) return;
+    castGrid.innerHTML = "";
+    CHARACTERS.forEach(function (c) {
+      var card = document.createElement("article");
+      card.className = "castcard reveal is-in";
+      card.innerHTML =
+        '<div class="castcard__art"><img src="' + c.art + '" alt="Character portrait of ' + c.name + '" loading="lazy" /></div>' +
+        '<h3 class="castcard__name">' + c.name + "</h3>" +
+        '<p class="castcard__line">' + c.tagline + "</p>";
+      castGrid.appendChild(card);
+    });
+  }
+
+  /* ---------------------------------------------------------
+     RENDER: sessions + slots
      --------------------------------------------------------- */
   function render() {
     sessionsEl.innerHTML = "";
     SESSIONS.forEach(function (s) {
-      var openCount = CHARACTERS.filter(function (c) { return !taken.has(slotId(s, c)); }).length;
+      var openCount = CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
 
       var card = document.createElement("div");
       card.className = "session";
@@ -69,21 +94,18 @@
       var slots = document.createElement("div");
       slots.className = "slots";
       CHARACTERS.forEach(function (c) {
-        var isTaken = taken.has(slotId(s, c));
+        var st = stateOf(slotId(s, c)); // open | pending | taken
         var slot = document.createElement("div");
-        slot.className = "slot " + (isTaken ? "slot--taken" : "slot--open");
+        slot.className = "slot slot--" + st;
+        var label = st === "open" ? "Open" : (st === "pending" ? "Pending" : "Taken");
+        var btn = st === "open"
+          ? '<button class="slot__btn" type="button">Request →</button>'
+          : '<button class="slot__btn" disabled>' + label + "</button>";
         slot.innerHTML =
           '<div class="slot__name">' + c.name + "</div>" +
-          '<div class="slot__row">' +
-            '<span class="slot__state">' + (isTaken ? "Taken" : "Open") + "</span>" +
-            (isTaken
-              ? '<button class="slot__btn" disabled>Taken</button>'
-              : '<button class="slot__btn" type="button">Choose →</button>') +
-          "</div>";
-        if (!isTaken) {
-          slot.querySelector(".slot__btn").addEventListener("click", function () {
-            openModal(s, c);
-          });
+          '<div class="slot__row"><span class="slot__state">' + label + "</span>" + btn + "</div>";
+        if (st === "open") {
+          slot.querySelector(".slot__btn").addEventListener("click", function () { openModal(s, c); });
         }
         slots.appendChild(slot);
       });
@@ -99,14 +121,8 @@
     if (!SCRIPT_URL) { render(); return; } // preview mode
     fetch(SCRIPT_URL)
       .then(function (r) { return r.json(); })
-      .then(function (d) {
-        taken = new Set((d && d.taken) || []);
-        render();
-      })
-      .catch(function () {
-        // If we can't reach the sheet, still show the slots (fail open, but warn on submit).
-        render();
-      });
+      .then(function (d) { statusMap = (d && d.slots) || {}; render(); })
+      .catch(function () { render(); });
   }
 
   /* ---------------------------------------------------------
@@ -121,7 +137,7 @@
     modalDone.hidden = true;
     form.reset();
     submitBtn.disabled = false;
-    submitBtn.textContent = "Confirm my seat";
+    submitBtn.textContent = "Send my request";
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -136,15 +152,13 @@
     selected = null;
   }
 
-  modal.addEventListener("click", function (e) {
-    if (e.target.hasAttribute("data-close")) closeModal();
-  });
+  modal.addEventListener("click", function (e) { if (e.target.hasAttribute("data-close")) closeModal(); });
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
   });
 
   /* ---------------------------------------------------------
-     SUBMIT
+     SUBMIT (request)
      --------------------------------------------------------- */
   form.addEventListener("submit", function (e) {
     e.preventDefault();
@@ -152,6 +166,7 @@
 
     var name = form.name.value.trim();
     var email = form.email.value.trim();
+    var age = form.age.value.trim();
     var phone = form.phone.value.trim();
     var rec = form.recommendedBy.value.trim();
 
@@ -159,38 +174,38 @@
       modalStatus.textContent = "Please add your name, a valid email, and a phone number.";
       return;
     }
-
-    var s = selected.session, c = selected.character;
-
-    // Preview mode (no backend connected yet)
-    if (!SCRIPT_URL) {
-      showDone(name, true);
+    if (!age || isNaN(age) || Number(age) < 16) {
+      modalStatus.textContent = "Please add your age (16+).";
       return;
     }
 
+    var s = selected.session, c = selected.character;
+
+    if (!SCRIPT_URL) { showDone(name, true); return; } // preview mode
+
     submitBtn.disabled = true;
-    submitBtn.textContent = "Reserving…";
+    submitBtn.textContent = "Sending…";
     modalStatus.textContent = "";
 
     var body = new URLSearchParams({
       slotId: slotId(s, c),
       session: s.date + " · " + s.time,
       character: c.name,
-      name: name, email: email, phone: phone, recommendedBy: rec
+      age: age, name: name, email: email, phone: phone, recommendedBy: rec
     });
 
     fetch(SCRIPT_URL, { method: "POST", body: body })
       .then(function (r) { return r.json(); })
       .then(function (res) {
         if (res && res.ok) {
-          taken.add(slotId(s, c));
+          statusMap[slotId(s, c)] = "Pending";
           showDone(name, false);
           loadAvailability();
         } else if (res && res.error === "taken") {
-          modalStatus.textContent = "Ah — that seat was just taken. Please choose another.";
+          modalStatus.textContent = "Ah — that seat was just requested by someone else. Please choose another.";
           submitBtn.disabled = false;
-          submitBtn.textContent = "Confirm my seat";
-          taken.add(slotId(s, c));
+          submitBtn.textContent = "Send my request";
+          statusMap[slotId(s, c)] = "Pending";
           render();
         } else {
           throw new Error("server");
@@ -199,7 +214,7 @@
       .catch(function () {
         modalStatus.textContent = "Something went wrong — please try again, or email hello@odeum.theatre.";
         submitBtn.disabled = false;
-        submitBtn.textContent = "Confirm my seat";
+        submitBtn.textContent = "Send my request";
       });
   });
 
@@ -210,10 +225,10 @@
     var first = name.split(" ")[0];
     if (preview) {
       msg.textContent = "Thanks, " + first + " — this is a preview, so nothing was recorded yet. " +
-        "Once the sheet is connected, this reserves your seat for real.";
+        "Once the sheet is connected, this sends your request for real.";
     } else {
-      msg.textContent = "Your seat is reserved, " + first + ". We'll email you your character dossier " +
-        "and the address before the night.";
+      msg.textContent = "Thanks, " + first + " — your seat is held as pending. We'll confirm by email, " +
+        "then send your character dossier and the address.";
     }
   }
 
@@ -232,5 +247,6 @@
     reveals.forEach(function (el) { el.classList.add("is-in"); });
   }
 
+  renderCast();
   loadAvailability();
 })();
