@@ -81,15 +81,19 @@
     <!-- CAST -->
     <section class="pcast" id="cast">
       <div class="pcast__head">
-        <span class="kicker reveal">The cast</span>
-        <h2 class="pcast__title reveal">Choose your character</h2>
+        <div class="pcast__headrow">
+          <div>
+            <span class="kicker reveal">The cast</span>
+            <h2 class="pcast__title reveal">Choose your character</h2>
+          </div>
+          <div class="pcast__nav reveal">
+            <button class="pcast__arrow" id="castPrev" type="button" aria-label="Previous characters">‹</button>
+            <button class="pcast__arrow" id="castNext" type="button" aria-label="More characters">›</button>
+          </div>
+        </div>
         <p class="pcast__sub reveal">Six players, six roles at one table. Scroll through them, then request your seat below. (Jana and Pavel are played by our company.)</p>
       </div>
-      <div class="pcast__strip reveal">
-        <button class="pcast__arrow pcast__arrow--prev" id="castPrev" type="button" aria-label="Previous characters">‹</button>
-        <div class="pcast__grid" id="castGrid" role="list"><!-- rendered by prague.js --></div>
-        <button class="pcast__arrow pcast__arrow--next" id="castNext" type="button" aria-label="More characters">›</button>
-      </div>
+      <div class="pcast__grid" id="castGrid" role="list"><!-- rendered by prague.js --></div>
     </section>
 
     <!-- WHAT TO KNOW -->

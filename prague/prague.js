@@ -23,10 +23,12 @@
   ];
 
   // Upcoming sessions.  TODO: confirm final location wording.
+  // NOTE: `id` is a STABLE date key (used in the sheet's SlotID). Never reuse or renumber it —
+  // when a date passes, just delete that entry; add new ones with their own date id.
   var SESSIONS = [
-    { id: "s1", date: "Saturday 26 September 2026", time: "6:00–11:00 PM", place: "Location shared on confirmation" },
-    { id: "s2", date: "Sunday 27 September 2026",   time: "6:00–11:00 PM", place: "Location shared on confirmation" },
-    { id: "s3", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Location shared on confirmation" }
+    { id: "2026-09-26", date: "Saturday 26 September 2026", time: "6:00–11:00 PM", place: "Location shared on confirmation" },
+    { id: "2026-09-27", date: "Sunday 27 September 2026",   time: "6:00–11:00 PM", place: "Location shared on confirmation" },
+    { id: "2026-10-17", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Location shared on confirmation" }
   ];
 
   /* ---------------------------------------------------------
