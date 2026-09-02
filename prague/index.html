@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Summertime in Prague — a private immersive-theatre game for six. Beta playtest by invitation. Choose your character and reserve a seat." />
+  <meta name="theme-color" content="#f1ece2" />
+  <!-- Unlisted beta page: keep it out of search results -->
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Summertime in Prague — Odeum Beta</title>
+
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../favicon.svg" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Odeum" />
+  <meta property="og:title" content="Summertime in Prague — Odeum Beta" />
+  <meta property="og:description" content="A private immersive-theatre game for six. Prague, 1968. Beta playtest by invitation — choose your character." />
+  <meta property="og:image" content="https://clysun.github.io/odeum/images/prague/table-lamp.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="prague.css" />
+</head>
+<body class="prague">
+  <!-- NAV -->
+  <header class="pnav" id="pnav">
+    <a href="../" class="pnav__home" aria-label="Back to Odeum">ODEUM</a>
+    <span class="pnav__tag">Beta Playtest</span>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="phero">
+      <img src="../images/prague/table-lamp.jpg" alt="A cast of six gathered around a lamplit table in character" class="phero__img" />
+      <div class="phero__scrim"></div>
+      <div class="phero__inner">
+        <p class="phero__eyebrow">Odeum · Immersive theatre for six</p>
+        <h1 class="phero__title">Summertime<br />in Prague</h1>
+        <p class="phero__meta">Prague, 1968 &nbsp;·&nbsp; A private beta playtest</p>
+        <a href="#reserve" class="pbtn pbtn--light">Choose your character</a>
+      </div>
+    </section>
+
+    <!-- STORY -->
+    <section class="pstory">
+      <div class="pstory__grid">
+        <div class="reveal">
+          <span class="kicker">The story</span>
+          <h2 class="pstory__lead">You are a writer for a literary magazine — and the summer is turning.</h2>
+        </div>
+        <div class="pstory__body reveal">
+          <p>In January 1968, Prague experiences its first loosening of censorship after twenty
+             years of Communist rule. As writers for a literary magazine, you are pushing the
+             boundaries of what can be published. But every article carries a risk, and it is
+             becoming critical to tell friend from foe.</p>
+          <p>Odeum seats six people at a table and gives each of them a character to inhabit —
+             a name, a past, and a reason to be in the room. Actors perform around you; you talk,
+             befriend, scheme, and make choices in character. The ending isn't written. That's
+             for you and your table to decide.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="pgallery" aria-label="From the room">
+      <figure class="pgallery__wide reveal">
+        <img src="../images/prague/confrontation.jpg" alt="Two characters in a heated exchange before a watching audience" loading="lazy" />
+      </figure>
+      <div class="pgallery__grid">
+        <figure class="reveal"><img src="../images/prague/whiteboard.jpg" alt="A character studies a timeline of the day's events" loading="lazy" /></figure>
+        <figure class="reveal"><img src="../images/prague/huddle.jpg" alt="Players conferring in lamplight" loading="lazy" /></figure>
+        <figure class="reveal"><img src="../images/prague/couch.jpg" alt="A quiet, tense conversation on a sofa" loading="lazy" /></figure>
+        <figure class="reveal"><img src="../images/prague/scripts.jpg" alt="Guests comparing notes and scripts" loading="lazy" /></figure>
+      </div>
+    </section>
+
+    <!-- WHAT TO KNOW -->
+    <section class="pknow">
+      <span class="kicker reveal">Good to know</span>
+      <ul class="pknow__list">
+        <li class="reveal"><h3>No acting experience needed</h3><p>You'll get a full character dossier in advance. Come as yourself, in your character's shoes.</p></li>
+        <li class="reveal"><h3>Six players a night</h3><p>An intimate cast of strangers. You'll leave having conspired, argued, and confided together.</p></li>
+        <li class="reveal"><h3>About three to four hours</h3><p>One evening, one continuous world. Light refreshments provided.</p></li>
+        <li class="reveal"><h3>It's a beta</h3><p>You're among the very first to play. We'll ask for your honest notes afterwards.</p></li>
+      </ul>
+    </section>
+
+    <!-- RESERVE -->
+    <section class="preserve" id="reserve">
+      <div class="preserve__head">
+        <span class="kicker reveal">Reserve a seat</span>
+        <h2 class="preserve__title reveal">Choose a date &amp; your character</h2>
+        <p class="preserve__sub reveal">Each character can be played by one guest. Once a seat is taken, it closes — so pick early.</p>
+      </div>
+      <div id="sessions" class="sessions" aria-live="polite">
+        <!-- rendered by prague.js -->
+        <p class="sessions__loading">Loading availability…</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="pfoot">
+    <a href="../" class="pfoot__brand">ODEUM</a>
+    <p>A private theatre experience · Questions? <a href="mailto:hello@odeum.theatre">hello@odeum.theatre</a></p>
+  </footer>
+
+  <!-- SIGNUP MODAL -->
+  <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__card" role="document">
+      <button class="modal__close" data-close aria-label="Close">×</button>
+      <div id="modalForm">
+        <p class="modal__eyebrow">Reserve your seat</p>
+        <h3 class="modal__title" id="modalTitle">Milan Novak</h3>
+        <p class="modal__slot" id="modalSlot">Friday 26 September · 7:00 PM</p>
+        <form id="signupForm" novalidate>
+          <div class="pfield">
+            <label for="f-name">Full name</label>
+            <input type="text" id="f-name" name="name" autocomplete="name" required />
+          </div>
+          <div class="pfield">
+            <label for="f-email">Email</label>
+            <input type="email" id="f-email" name="email" autocomplete="email" required />
+          </div>
+          <div class="pfield">
+            <label for="f-phone">Phone</label>
+            <input type="tel" id="f-phone" name="phone" autocomplete="tel" required />
+          </div>
+          <div class="pfield">
+            <label for="f-rec">Who recommended you?</label>
+            <input type="text" id="f-rec" name="recommendedBy" placeholder="A name helps us keep the room trusted" />
+          </div>
+          <button type="submit" class="pbtn pbtn--dark" id="submitBtn">Confirm my seat</button>
+          <p class="modal__status" id="modalStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div id="modalDone" class="modal__done" hidden>
+        <h3 class="modal__title">You're in.</h3>
+        <p id="doneMsg">Your seat is reserved. We'll be in touch by email with your character dossier and the address.</p>
+        <button class="pbtn pbtn--dark" data-close>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="prague.js"></script>
+</body>
+</html>
