@@ -10,3 +10,6 @@
 
 # Original character art PNGs (kept locally; web uses the JPGs in images/prague/cast)
 /Character art/
+
+# Original host photo (kept locally; web uses the cropped images/prague/clytze.jpg)
+/images/clytze.jpeg

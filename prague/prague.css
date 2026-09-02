@@ -291,39 +291,43 @@
 .pfoot a { color: rgba(241, 236, 226, 0.82); border-bottom: 1px solid rgba(241, 236, 226, 0.28); }
 .pfoot a:hover { color: #d8b877; border-bottom-color: #d8b877; }
 
-/* ---------- BEHIND ODEUM ---------- */
+/* ---------- BEHIND ODEUM (compact appendix) ---------- */
 .pabout {
   border-top: 1px solid rgba(241, 236, 226, 0.12);
-  padding: clamp(4rem, 11vh, 7rem) clamp(1.25rem, 5vw, 3.5rem);
+  padding: clamp(2.5rem, 6vh, 3.75rem) clamp(1.25rem, 5vw, 3.5rem);
   text-align: center;
 }
-.pabout__inner { max-width: 620px; margin: 0 auto; }
-.pabout__sun { color: #d8b877; margin-bottom: 1.4rem; opacity: 0.9; }
-.pabout .kicker { color: rgba(241, 236, 226, 0.55); }
+.pabout__inner { max-width: 480px; margin: 0 auto; }
+.pabout__photo {
+  width: 96px; height: 96px; border-radius: 50%; object-fit: cover;
+  margin: 0 auto 1.1rem; display: block;
+  border: 1px solid rgba(241, 236, 226, 0.2);
+}
+.pabout .kicker { color: rgba(241, 236, 226, 0.5); font-size: 0.66rem; }
 .pabout__name {
-  font-family: var(--serif); font-weight: 300;
-  font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.02em; margin: 0.9rem 0 0.4rem;
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(1.5rem, 3vw, 1.9rem); letter-spacing: -0.01em; margin: 0.5rem 0 0.3rem;
 }
 .pabout__role {
-  font-size: 0.74rem; letter-spacing: 0.22em; text-transform: uppercase;
-  color: rgba(241, 236, 226, 0.6); margin-bottom: 1.8rem;
+  font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(241, 236, 226, 0.55); margin-bottom: 1.1rem;
 }
 .pabout__bio p {
-  color: rgba(241, 236, 226, 0.74); font-size: clamp(1rem, 1.3vw, 1.12rem);
-  line-height: 1.7; margin-bottom: 1.1rem;
+  color: rgba(241, 236, 226, 0.66); font-size: 0.9rem;
+  line-height: 1.6; margin-bottom: 0.8rem;
 }
 .pabout__bio p:last-child { margin-bottom: 0; }
 .pabout__contact {
-  display: flex; flex-wrap: wrap; gap: 0.8rem; justify-content: center; margin-top: 2.2rem;
+  display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 1.5rem;
 }
 .pabout__btn {
-  display: inline-flex; align-items: center; gap: 0.6rem;
-  padding: 0.7rem 1.3rem; border-radius: 100px;
-  border: 1px solid rgba(241, 236, 226, 0.28); color: rgba(241, 236, 226, 0.85);
-  font-size: 0.9rem; letter-spacing: 0.02em;
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 1.05rem; border-radius: 100px;
+  border: 1px solid rgba(241, 236, 226, 0.26); color: rgba(241, 236, 226, 0.82);
+  font-size: 0.82rem; letter-spacing: 0.02em;
   transition: background 0.35s var(--ease), color 0.35s var(--ease), border-color 0.35s var(--ease), transform 0.35s var(--ease);
 }
-.pabout__btn svg { flex-shrink: 0; }
+.pabout__btn svg { flex-shrink: 0; width: 16px; height: 16px; }
 .pabout__btn:hover {
   background: var(--paper); color: var(--ink); border-color: var(--paper); transform: translateY(-2px);
 }
