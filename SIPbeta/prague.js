@@ -122,27 +122,47 @@
   /* ---------------------------------------------------------
      RENDER: sessions + slots
      --------------------------------------------------------- */
-  function render() {
+  function render(loading) {
     sessionsEl.innerHTML = "";
-    SESSIONS.forEach(function (s) {
-      var openCount = CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
 
+    if (loading) {
+      var bar = document.createElement("div");
+      bar.className = "avail-bar";
+      bar.innerHTML =
+        '<span class="avail-bar__label">Checking live availability…</span>' +
+        '<span class="avail-bar__track"><span></span></span>';
+      sessionsEl.appendChild(bar);
+    }
+
+    SESSIONS.forEach(function (s) {
       var card = document.createElement("div");
       card.className = "session";
+
+      var count = loading
+        ? "Checking…"
+        : (CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length + " of " + CHARACTERS.length + " seats open");
 
       var head = document.createElement("div");
       head.className = "session__head";
       head.innerHTML =
         '<div><div class="session__date">' + s.date + "</div>" +
         '<div class="session__meta">' + s.time + " · " + s.place + "</div></div>" +
-        '<div class="session__count">' + openCount + " of " + CHARACTERS.length + " seats open</div>";
+        '<div class="session__count">' + count + "</div>";
       card.appendChild(head);
 
       var slots = document.createElement("div");
       slots.className = "slots";
       CHARACTERS.forEach(function (c) {
-        var st = stateOf(slotId(s, c)); // open | pending | taken
         var slot = document.createElement("div");
+        if (loading) {
+          slot.className = "slot slot--loading";
+          slot.innerHTML =
+            '<div class="slot__name">' + c.name + "</div>" +
+            '<div class="slot__row"><span class="slot__state">Checking…</span></div>';
+          slots.appendChild(slot);
+          return;
+        }
+        var st = stateOf(slotId(s, c)); // open | pending | taken
         slot.className = "slot slot--" + st;
         var label = st === "open" ? "Open" : (st === "pending" ? "Pending" : "Taken");
         var btn = st === "open"
@@ -165,11 +185,12 @@
      AVAILABILITY
      --------------------------------------------------------- */
   function loadAvailability() {
-    if (!SCRIPT_URL) { render(); return; } // preview mode
+    if (!SCRIPT_URL) { render(false); return; } // preview mode
+    render(true); // show dates + names + progress bar immediately
     fetch(SCRIPT_URL)
       .then(function (r) { return r.json(); })
-      .then(function (d) { statusMap = (d && d.slots) || {}; render(); })
-      .catch(function () { render(); });
+      .then(function (d) { statusMap = (d && d.slots) || {}; render(false); })
+      .catch(function () { render(false); });
   }
 
   /* ---------------------------------------------------------
@@ -257,7 +278,7 @@
           submitBtn.disabled = false;
           submitBtn.textContent = "Send my request";
           statusMap[slotId(s, c)] = "Pending";
-          render();
+          render(false);
         } else {
           throw new Error("server");
         }
