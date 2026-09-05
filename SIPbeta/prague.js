@@ -14,7 +14,7 @@
   // The six PLAYER characters, ordered so couples sit together.
   // (Jana & Pavel are DM characters, not player-filled.)
   var CHARACTERS = [
-    { id: "eva",    name: "Eva",    art: "../images/prague/cast/eva.jpg",    tagline: "Writes art and culture critiques. Speaks three languages. An exemplary human being." },
+    { id: "eva",    name: "Eva",    art: "../images/prague/cast/eva.jpg",    tagline: "Writes art and culture critiques. Speaks three languages. Is there anything she can’t do?"},
     { id: "vaclav", name: "Vaclav", art: "../images/prague/cast/vaclav.jpg", tagline: "Writes poetry. Full of charm. The world is a bit dreamier in his eyes." },
     { id: "milan",  name: "Milan",  art: "../images/prague/cast/milan.jpg",  tagline: "Writes absurdist stories. Loves wandering around cemeteries at the outskirts of the city." },
     { id: "vera",   name: "Vera",   art: "../images/prague/cast/vera.jpg",   tagline: "Writes about Prague’s rock music scene. A drummer. Might seem hard to approach at first." },
