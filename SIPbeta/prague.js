@@ -138,9 +138,10 @@
       var card = document.createElement("div");
       card.className = "session";
 
+      var openCount = CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
       var count = loading
         ? "Checking…"
-        : (CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length + " of " + CHARACTERS.length + " seats open");
+        : (openCount === 0 ? "Fully booked" : openCount + " of " + CHARACTERS.length + " seats open");
 
       var head = document.createElement("div");
       head.className = "session__head";
