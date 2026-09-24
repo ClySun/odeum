@@ -33,9 +33,10 @@
   // NOTE: `id` is a STABLE date key (used in the sheet's SlotID). Never reuse or renumber it —
   // when a date passes, just delete that entry; add new ones with their own date id.
   var SESSIONS = [
-    { id: "2026-09-26", date: "Saturday 26 September 2026", time: "6:00–11:00 PM", place: "Upper West Side" },
-    { id: "2026-10-01", date: "Thursday 1 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side" },
-    { id: "2026-10-17", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side" }
+    // To reopen a date, remove its `full: true`.
+    { id: "2026-09-26", date: "Saturday 26 September 2026", time: "6:00–11:00 PM", place: "Upper West Side", full: true },
+    { id: "2026-10-01", date: "Thursday 1 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side", full: true },
+    { id: "2026-10-17", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side", full: true }
   ];
 
   /* ---------------------------------------------------------
@@ -138,7 +139,7 @@
       var card = document.createElement("div");
       card.className = "session";
 
-      var openCount = CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
+      var openCount = s.full ? 0 : CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
       var count = loading
         ? "Checking…"
         : (openCount === 0 ? "Fully booked" : openCount + " of " + CHARACTERS.length + " seats open");
@@ -163,7 +164,7 @@
           slots.appendChild(slot);
           return;
         }
-        var st = stateOf(slotId(s, c)); // open | pending | taken
+        var st = s.full ? "taken" : stateOf(slotId(s, c)); // open | pending | taken
         slot.className = "slot slot--" + st;
         var label = st === "open" ? "Open" : (st === "pending" ? "Pending" : "Taken");
         var btn = st === "open"
@@ -186,7 +187,8 @@
      AVAILABILITY
      --------------------------------------------------------- */
   function loadAvailability() {
-    if (!SCRIPT_URL) { render(false); return; } // preview mode
+    var allFull = SESSIONS.every(function (s) { return s.full; });
+    if (!SCRIPT_URL || allFull) { render(false); return; } // nothing to fetch
     render(true); // show dates + names + progress bar immediately
     fetch(SCRIPT_URL)
       .then(function (r) { return r.json(); })
