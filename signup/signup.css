@@ -32,7 +32,7 @@
 .shead__game { font-family: var(--serif); font-style: italic; font-size: 1rem; color: var(--ink-soft); text-align: center; }
 .shead__side { justify-self: end; display: flex; gap: 1.25rem; align-items: center; }
 .shead__restart {
-  background: none; border: none; cursor: pointer;
+  background: none; border: none; cursor: pointer; white-space: nowrap;
   font: inherit; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint);
 }
 .shead__restart:hover { color: var(--wine); }
@@ -206,7 +206,7 @@ button.date:hover { border-color: var(--ink-soft); }
 .loading span { display: block; height: 100%; width: 30%; background: var(--wine); animation: sload 1.2s var(--ease) infinite; }
 @keyframes sload { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 
-@media (max-width: 480px) { .shead__game { display: none; } .shead { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .shead__game { display: none; } .shead { grid-template-columns: auto 1fr; } }
 @media (max-width: 480px) { .choices--list { grid-template-columns: 1fr; } .date { width: calc((100% - 3 * 0.55rem) / 4); } }
 
 /* ---------- Portal ---------- */
@@ -218,3 +218,8 @@ a.inline:hover { color: var(--wine); border-color: var(--wine); }
 .scard.is-cancelled { opacity: 0.55; }
 .scard .flink { margin-top: 1rem; }
 @media (max-width: 480px) { .shead__side { gap: 0.8rem; } }
+
+/* three choices on "Who's coming"; short birth-year box */
+.choices--three { grid-template-columns: repeat(3, 1fr); }
+.field input.field--year { max-width: 8ch; letter-spacing: 0.08em; }
+@media (max-width: 600px) { .choices--three { grid-template-columns: 1fr; } }

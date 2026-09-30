@@ -12,7 +12,7 @@
 
   var AGES = ["18–21", "22–25", "26–35", "36–40", "41+"];
   var GENDERS = [["man", "Male"], ["woman", "Female"], ["nonbinary", "Nonbinary"], ["self", "Self-describe"]];
-  var FRIEND_GENDERS = [["man", "Male"], ["woman", "Female"], ["nonbinary", "Nonbinary"], ["self", "Other"]];
+  var FRIEND_GENDERS = [["man", "Male"], ["woman", "Female"], ["nonbinary", "Nonbinary"], ["self", "Other/Not sure"]];
   var AGE_WARN_YEARS = 10; // the database also uses 10 years as the recommendation cut-off
   var COMFORT = [["man", "Male"], ["woman", "Female"], ["nonbinary", "Nonbinary"]];
 
@@ -167,7 +167,7 @@
   function freshBooking() {
     var s = {
       kind: "booking", bookingId: uid(14), secret: uid(24), partyToken: uid(16), game: GAME.id, step: "about", status: "Draft",
-      me: { name: "", email: "", phone: "", age: "", gender: "", genderText: "" },
+      me: { name: "", email: "", phone: "", birthYear: "", age: "", gender: "", genderText: "" },
       mode: "", joining: false, joinSession: "", friends: [], couples: [],
       charGender: "", quiz: {}, comfort: [], prefsOn: false, prefs: {}, requestsOn: false, requests: "",
       sessionId: "", sessionDate: "", sessionTime: "", pick: null, showCalendar: false
@@ -177,10 +177,12 @@
 
   function members() {
     var m = [{ id: "me", name: P.me.name || "You", gender: P.me.gender, isMe: true }];
-    if (P.mode === "group") P.friends.forEach(function (f, i) { m.push({ id: f.id, name: f.name || "Friend " + (i + 1), gender: f.gender }); });
+    if (hasFriends()) P.friends.forEach(function (f, i) { m.push({ id: f.id, name: f.name || "Friend " + (i + 1), gender: f.gender }); });
     return m;
   }
-  function groupSize() { return P.mode === "group" ? 1 + P.friends.length : 1; }
+  // "Me and my plus-one" is a group of exactly two.
+  function hasFriends() { return P.mode === "group" || P.mode === "plusone"; }
+  function groupSize() { return hasFriends() ? 1 + P.friends.length : 1; }
 
   // What this browser keeps so people can come back to an unfinished form.  Pairing-comfort answers
   // are never kept here (they go straight to the database), and once a booking or friend quiz is
@@ -215,6 +217,7 @@
     delete b.secret; delete b.code; delete b.codeSentTo; delete b.emailVerified; delete b.step; delete b.party; delete b.pick;
     if (!P.comfortTouched) delete b.comfort; // don't overwrite a saved answer with an empty one after a reload
     delete b.comfortTouched;
+    if (b.mode === "plusone") b.mode = "group";
     var r = rankForMe(), done = Object.keys(P.quiz || {}).length > 0;
     return {
       booking: b,
@@ -271,10 +274,21 @@
     return '<label class="field"><span>' + label + '</span><input type="' + (type || "text") + '" data-k="' + path +
       '" value="' + esc(getPath(P, path)) + '" ' + (extra || "") + " /></label>";
   }
+  function yearField(path) {
+    return '<label class="field"><span>What year were you born?</span><input type="text" class="field--year" data-k="' + path +
+      '" value="' + esc(getPath(P, path) || "") + '" inputmode="numeric" maxlength="4" autocomplete="bday-year" /></label>';
+  }
+  function yearError(y) {
+    y = String(y || "").trim();
+    var now = new Date().getFullYear();
+    if (!/^\d{4}$/.test(y) || +y < now - 110 || +y > now) return "Please enter the year you were born.";
+    if (now - +y < 18) return "You need to be 18 or older to play.";
+    return "";
+  }
   function genderBlock(base, opts) {
     var g = getPath(P, base + ".gender"), friend = opts === FRIEND_GENDERS;
     return '<div class="field"><span>Gender</span>' + chips(base + ".gender", opts, g) +
-      (g === "self" ? '<input type="text" class="field__sub" placeholder="' + (friend ? "Describe (optional)" : "How do you describe your gender?") + '" data-k="' + base + '.genderText" value="' + esc(getPath(P, base + ".genderText")) + '" />' : "") +
+      (g === "self" ? '<input type="text" class="field__sub" placeholder="' + (friend ? "Describe (optional)" : "") + '" data-k="' + base + '.genderText" value="' + esc(getPath(P, base + ".genderText")) + '" />' : "") +
       "</div>";
   }
   function head(kicker, title, sub) {
@@ -337,7 +351,7 @@
           field("Full name", "me.name", "text", 'autocomplete="name"') +
           field("Email", "me.email", "email", 'autocomplete="email"') +
           field("Phone", "me.phone", "tel", 'autocomplete="tel"') +
-          '<div class="field"><span>Age</span>' + chips("me.age", AGES.map(function (a) { return [a, a]; }), P.me.age) + "</div>" +
+          yearField("me.birthYear") +
           genderBlock("me", GENDERS) + privacyNote();
       },
       valid: function () {
@@ -345,8 +359,8 @@
         if (!m.name.trim()) return "Please add your name.";
         if (!validEmail(m.email)) return "Please add a valid email.";
         if (!m.phone.trim()) return "Please add a phone number.";
-        if (!m.age) return "Please choose your age range.";
-        if (!m.gender || (m.gender === "self" && !m.genderText.trim())) return "Please tell us your gender.";
+        var ye = yearError(m.birthYear); if (ye) return ye;
+        if (!m.gender || (m.gender === "self" && !m.genderText.trim())) return "Please share your gender with us.";
         return "";
       }
     },
@@ -354,9 +368,10 @@
     who: {
       stage: 1,
       render: function () {
-        return head("Step 2 · Who’s coming", "Who’s coming with you?", "You’ll book and pay for everyone in one go. Your friends fill in their own character quiz afterwards.") +
-          '<div class="choices">' +
-          choice("mode", "solo", "Just me", "A seat for one.") +
+        return head("Step 2 · Who’s coming", "Who’s coming with you?", "You’ll book for everyone in one go. Your friends fill in their own character quiz afterwards.") +
+          '<div class="choices choices--three">' +
+          choice("mode", "solo", "Just me", "") +
+          choice("mode", "plusone", "Me and my plus-one", "") +
           choice("mode", "group", "Me and friends", "Up to " + (GAME.seats - 1) + " others.") +
           "</div>" +
           '<button type="button" class="toggle' + (P.joining ? " is-on" : "") + '" data-act="joining"><span class="toggle__box"></span>' +
@@ -369,16 +384,17 @@
       stage: 1,
       render: function () {
         if (!P.friends.length) addFriend();
-        return head("Step 2 · Who’s coming", "Tell us about your friends.", "Just the basics. Your best guess is fine for age.") +
+        var one = P.mode === "plusone";
+        return head("Step 2 · Who’s coming", one ? "Tell us about your plus-one." : "Tell us about your friends.", "Just the basics. Your best guess is fine for age.") +
           P.friends.map(function (f, i) {
             var b = "friends." + i;
-            return '<fieldset class="friend"><legend>Friend ' + (i + 1) + "</legend>" +
+            return '<fieldset class="friend"><legend>' + (one ? "Your plus-one" : "Friend " + (i + 1)) + "</legend>" +
               (P.friends.length > 1 ? '<button type="button" class="friend__x" data-act="rmFriend" data-v="' + i + '" aria-label="Remove">Remove</button>' : "") +
               field("Full name", b + ".name") +
               '<div class="field"><span>Age</span>' + chips(b + ".age", AGES.map(function (a) { return [a, a]; }), f.age) + "</div>" +
               genderBlock(b, FRIEND_GENDERS) + "</fieldset>";
           }).join("") +
-          (P.friends.length < GAME.seats - 1 ? '<button type="button" class="btn btn--ghost" data-act="addFriend">+ Add another friend</button>' : "");
+          (!one && P.friends.length < GAME.seats - 1 ? '<button type="button" class="btn btn--ghost" data-act="addFriend">+ Add another friend</button>' : "");
       },
       valid: function () {
         for (var i = 0; i < P.friends.length; i++) {
@@ -400,6 +416,7 @@
         }
         return head("Step 2 · Connections in your group", "Any real-life partners?",
           "This game pairs people up to experience romantic relationships, alongside others like family and mentor and mentee. We’d like to know about any real-life partners in your group.") +
+          '<p class="note">This information is completely private. It will only be used by our team to make thoughtful character and seating matches.</p>' +
           P.couples.map(function (c, i) {
             return '<div class="couple">' + sel(i, 0) + '<span class="couple__amp">&amp;</span>' + sel(i, 1) +
               '<button type="button" class="friend__x" data-act="rmCouple" data-v="' + i + '">Remove</button></div>';
@@ -410,7 +427,7 @@
       valid: function () {
         P.couples = P.couples.filter(function (c) { return c && (c[0] || c[1]); });
         for (var i = 0; i < P.couples.length; i++) {
-          if (!P.couples[i][0] || !P.couples[i][1] || P.couples[i][0] === P.couples[i][1]) return "Each couple needs two different people.";
+          if (!P.couples[i][0] || !P.couples[i][1] || P.couples[i][0] === P.couples[i][1]) return "Please complete the couple pairings.";
         }
         return "";
       }
@@ -446,8 +463,8 @@
       next: "Begin",
       render: function () {
         return '<div class="pause">' + head("Step 3 · Character fit", "Now, a few questions about you.",
-          "These help us find the character in <em>" + GAME.title + "</em> who fits " +
-          (P.kind === "friend" ? "you" : "<strong>you</strong>, the person booking") + " best. There are no wrong answers. Go with your first instinct.") + "</div>";
+          "Every character in <em>" + esc(GAME.title) + "</em> has a distinct personality and perspective. " +
+          "The following questions help us understand which characters may be the best fit for you.") + "</div>";
       },
       valid: function () { return ""; }
     },
@@ -471,11 +488,10 @@
       stage: 2,
       render: function () {
         var solo = groupSize() === 1;
-        return head("Step 3 · Characters", solo ? "Do you want a specific character?" : "Does anyone in your group want a specific character?",
-          "Most people leave this to us. A preference helps us rank dates; a requirement rules out dates where that character is taken.") +
+        return head("Step 3 · Characters", solo ? "Do you want to experience a specific character?" : "Does anyone in your group want a specific character?", "") +
           '<div class="choices">' +
           choice("prefsOn", false, "We’re open to recommendations", "") +
-          choice("prefsOn", true, solo ? "Yes, I have a preference" : "Yes, we have preferences", "") +
+          choice("prefsOn", true, solo ? "Yes, I have a particular role in mind" : "Yes, we have particular roles in mind", "") +
           "</div>" +
           (P.prefsOn ? members().map(prefRow).join("") : "") +
           requestsBlock();
@@ -493,8 +509,7 @@
           (gone.length > 1 ? " are" : " is") + " no longer available.</p>" : "";
         if (P.joining) {
           return head("Step 4 · Your game", "Your friends’ table", "") + note +
-            (top.length ? sessionCard(top[0], true) : '<p class="warn">Your friends’ table doesn’t have room for your group' +
-              (size > 1 ? " of " + size : "") + " any more, or can’t fit everyone’s character choices.</p>") +
+            (top.length ? sessionCard(top[0], true) : '<p class="warn">Your friends’ table is already full. Would you like to explore other available dates?</p>') +
             proposeLink("See all available dates");
         }
         return head("Step 4 · Your game", top.length ? "Your best tables" : "No table fits yet",
@@ -563,7 +578,7 @@
       stage: 4, noNext: true, noBack: true,
       render: function () {
         var html = head("You’re booked", "See you on " + fmtDate(P.sessionDate) + ".", "You can see your booking any time in your Odeum portal.");
-        if (P.mode === "group" && P.friends.length) {
+        if (hasFriends() && P.friends.length) {
           html += '<h2 class="h2">Send this link to your friends</h2><p class="sub">One link for everyone. Each friend picks their name, fixes any typos, and takes their own character quiz. Their seats are already reserved.</p>' +
             '<div class="flink"><input readonly value="' + esc(partyLink()) + '" />' +
             '<button type="button" class="btn btn--ghost" data-act="copy">Copy</button>' +
@@ -595,7 +610,7 @@
       render: function () {
         return head("About you", "Confirm your details.", "Fix any typos in your name. This also sets up your Odeum profile for next time.") +
           field("Full name", "me.name") + field("Email", "me.email", "email", 'autocomplete="email"') + field("Phone", "me.phone", "tel", 'autocomplete="tel"') +
-          '<div class="field"><span>Age</span>' + chips("me.age", AGES.map(function (a) { return [a, a]; }), P.me.age) + "</div>" +
+          yearField("me.birthYear") +
           genderBlock("me", GENDERS) + privacyNote();
       },
       valid: function () { return SCREENS.about.valid(); }
@@ -646,8 +661,7 @@
           '<a class="linkbtn linkbtn--big" href="./">Book a game →</a>';
         html += '<h2 class="h3">Your details</h2>';
         if (P.editing) {
-          html += field("Full name", "edit.name") + field("Phone", "edit.phone", "tel") +
-            '<div class="field"><span>Age</span>' + chips("edit.age", AGES.map(function (a) { return [a, a]; }), P.edit.age) + "</div>" +
+          html += field("Full name", "edit.name") + field("Phone", "edit.phone", "tel") + yearField("edit.birthYear") +
             genderBlock("edit", GENDERS) +
             '<button type="button" class="btn" data-act="saveProfile">Save</button> &nbsp; <button type="button" class="linkbtn" data-act="cancelEdit">Cancel</button>';
         } else {
@@ -711,7 +725,7 @@
     var pr = P.prefs[m.id] || { choice: "none", strength: "preferred" };
     var cg = m.isMe ? P.charGender : charGenderFor(m.gender);
     var chars = GAME.characters.filter(function (c) { return !cg || c.gender === cg; });
-    var opts = [["none", "No preference"]];
+    var opts = [["none", "Open to any character"]];
     if (!cg) opts.push(["anyF", "Any female character"], ["anyM", "Any male character"]);
     opts = opts.concat(chars.map(function (c) { return [c.id, c.name]; }));
     return '<div class="pref"><strong>' + esc(m.name) + (m.isMe ? " (you)" : "") + "</strong>" +
@@ -721,17 +735,13 @@
       (pr.choice && pr.choice !== "none" ? chips("prefs." + m.id + ".strength", [["preferred", "Preferred"], ["required", "Required"]], pr.strength || "preferred") : "") +
       "</div>";
   }
-  // Opening "special requests" also asks, optionally, who they're comfortable being paired with.
+  // Pairing comfort: optional, private, asked of everyone for themselves.
   function requestsBlock() {
-    if (!P.requestsOn) return '<div class="requests"><button type="button" class="linkbtn" data-act="requestsOn">Any special partner pairing or seating requests?</button></div>';
-    return '<div class="requests">' +
-      '<label class="field"><span>Any special partner pairing or seating requests?</span><textarea rows="4" data-k="requests">' + esc(P.requests) + "</textarea></label>" +
-      '<div class="field"><span>Which genders are you comfortable being paired with in an in-game romance?</span>' +
+    return '<div class="requests"><div class="field"><span>Which genders are you comfortable being paired with in an in-game romance?</span>' +
       '<div class="chips">' + COMFORT.map(function (o) {
         return '<button type="button" class="chip' + (P.comfort.indexOf(o[0]) >= 0 ? " is-on" : "") + '" data-toggle="comfort" data-v="' + o[0] + '">' + o[1] + "</button>";
       }).join("") + "</div>" +
-      '<p class="private"><span aria-hidden="true">🔒</span> Optional, choose all that apply. Private: used only for matching, never shown on profiles or shared with ' +
-      (P.kind === "friend" ? "the person who booked" : "anyone in your group") + " or other players.</p></div></div>";
+      '<p class="private"><span aria-hidden="true">🔒</span> Optional, choose all that apply. Your answer here will only be used for matching and will never be displayed or shared with other players.</p></div></div>';
   }
   function proposeLink(label) { return '<button type="button" class="linkbtn linkbtn--big" data-act="propose">' + label + " →</button>"; }
   function loading() { return '<div class="loading"><span></span></div>'; }
@@ -756,7 +766,7 @@
     syncCharGender();
     if (P.kind === "friend") return ["fWelcome", "fAbout"].concat(quizSteps(), ["fRequests"], emailVerified() ? [] : ["verifyEmail"], ["fDone"]);
     var f = ["about", "who"];
-    if (P.mode === "group") f.push("friends", "connections");
+    if (hasFriends()) f.push("friends", "connections");
     if (P.joining) f.push("joinDate");
     f = f.concat(quizSteps(), ["prefs", "match"]);
     if (P.showCalendar) f.push("calendar");
@@ -847,6 +857,11 @@
     choice: function (el) {
       P[el.dataset.k] = JSON.parse(el.dataset.v);
       if (el.dataset.k === "mode" && P.mode === "solo") P.couples = [];
+      if (el.dataset.k === "mode" && P.mode === "plusone" && P.friends.length > 1) {
+        var keep = P.friends[0].id;
+        P.friends = P.friends.slice(0, 1);
+        P.couples = P.couples.filter(function (c) { return c.every(function (id) { return !id || id === "me" || id === keep; }); });
+      }
       if (el.dataset.advance) { persist(); render(); setTimeout(next, 180); } else render();
     },
     joining: function () { P.joining = !P.joining; if (!P.joining) P.joinSession = ""; render(); },
@@ -882,12 +897,13 @@
     },
     editProfile: function () {
       var pr = (PORTAL && PORTAL.profile) || {};
-      P.edit = { name: pr.name || "", phone: pr.phone || "", age: pr.age || "", gender: pr.gender || "", genderText: pr.genderText || "" };
+      P.edit = { name: pr.name || "", phone: pr.phone || "", birthYear: pr.birthYear ? String(pr.birthYear) : "", gender: pr.gender || "", genderText: pr.genderText || "" };
       P.editing = true; render();
     },
     cancelEdit: function () { P.editing = false; render(); },
     saveProfile: function () {
       if (!P.edit.name.trim()) { flash = "Please add your name."; render(); return; }
+      if (P.edit.birthYear && yearError(P.edit.birthYear)) { flash = yearError(P.edit.birthYear); render(); return; }
       rpc("update_profile", { p: P.edit }).then(function (res) {
         if (!res || !res.ok) { flash = "Couldn’t save. Please try again."; render(); return; }
         P.editing = false; loadPortal();
@@ -1039,7 +1055,7 @@
       rpc("my_portal").then(function (d) {
         var pr = d && d.profile;
         if (!pr || P.me.name) return;
-        P.me.name = pr.name || ""; P.me.email = e; P.me.phone = pr.phone || ""; P.me.age = pr.age || "";
+        P.me.name = pr.name || ""; P.me.email = e; P.me.phone = pr.phone || ""; P.me.birthYear = pr.birthYear ? String(pr.birthYear) : "";
         P.me.gender = pr.gender || ""; P.me.genderText = pr.genderText || ""; P.prefilled = true;
         if (P.step === "about") render();
       });
@@ -1087,7 +1103,7 @@
       if (!d || !d.ok) { message("That link didn’t work.", "Please ask the person who booked to send it again."); return; }
       P = restore(partyKey()) || {
         kind: "friend", step: "fWelcome", friendId: "",
-        me: { name: "", email: "", phone: "", age: "", gender: "", genderText: "" },
+        me: { name: "", email: "", phone: "", birthYear: "", age: "", gender: "", genderText: "" },
         charGender: "", quiz: {}, comfort: [], requestsOn: false, requests: ""
       };
       P.organizer = d.organizer || ""; P.sessionLabel = d.sessionLabel || ""; P.party = d.members || [];

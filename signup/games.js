@@ -40,49 +40,43 @@ window.ODEUM = {
         {
           id: "party", q: "At a party, you’re most likely to be…",
           options: [
-            { t: "Holding court with a story", s: { vaclav: 2, petra: 1 } },
-            { t: "Deep in a one-on-one debate", s: { eva: 2, tomas: 1 } },
-            { t: "By the record player, choosing the music", s: { vera: 2 } },
-            { t: "Wandering off to explore the house", s: { milan: 2 } }
+            { t: "Telling a story to a group", s: { vaclav: 2, petra: 1 } },
+            { t: "Deep in a one-on-one conversation", s: { eva: 2, tomas: 1 } },
+            { t: "Wandering off to explore the house", s: { milan: 2, vera: 2 } }
           ]
         },
         {
-          id: "censor", q: "A censor strikes your article. You…",
+          id: "editor", q: "Your editor tells you that a few lines in your article are too sensitive to publish. You…",
           options: [
-            { t: "Rewrite it so cleverly it slips through", s: { eva: 2, milan: 1 } },
-            { t: "Publish it anyway, consequences be damned", s: { vera: 2, petra: 1 } },
-            { t: "Quietly pass copies to the people who need it", s: { tomas: 2 } },
-            { t: "Turn the whole affair into a poem", s: { vaclav: 2, milan: 1 } }
+            { t: "Rewrite them cleverly, keeping the meaning intact for readers who know how to read between the lines.", s: { eva: 2, vaclav: 1 } },
+            { t: "Persuade your editor that removing those lines would compromise the integrity of the article.", s: { vera: 2, milan: 1, petra: 1 } },
+            { t: "Remove them from the published version, then quietly circulate the uncensored version to people you trust.", s: { tomas: 2, petra: 1 } }
           ]
         },
         {
-          id: "sunday", q: "Your ideal Sunday in Prague:",
+          id: "sunday", q: "One thing that a relaxing Sunday would include:",
           options: [
-            { t: "A new exhibition, then reviewing it over coffee", s: { eva: 2 } },
-            { t: "Rehearsing with a small theatre troupe", s: { petra: 2 } },
-            { t: "A long walk through Olšany Cemetery", s: { milan: 2 } },
-            { t: "A loud, smoky cellar club", s: { vera: 2 } },
-            { t: "A park bench and a notebook", s: { vaclav: 2 } },
-            { t: "Tutoring a student who’s falling behind", s: { tomas: 2 } }
+            { t: "A new exhibition", s: { eva: 2 } },
+            { t: "A gathering of like-minded friends", s: { petra: 2 } },
+            { t: "A long walk through a quiet park", s: { milan: 2 } },
+            { t: "A loud, smoky cellar club", s: { vera: 2, milan: 2 } },
+            { t: "A park bench and a notebook", s: { vaclav: 2, tomas: 2 } }
           ]
         },
         {
-          id: "friends", q: "Your friends would describe you as…",
+          id: "brainstorm", q: "When a group is in a brainstorming session, you’re most likely to…",
           options: [
-            { t: "Sharp", s: { eva: 2, vera: 1 } },
-            { t: "Charming", s: { vaclav: 2, petra: 1 } },
-            { t: "Curious and a little strange", s: { milan: 2 } },
-            { t: "Fiercely loyal", s: { vera: 2, tomas: 1 } },
-            { t: "Steady and wise", s: { tomas: 2, eva: 1 } },
-            { t: "Unstoppable", s: { petra: 2 } }
+            { t: "Come up with the initial idea and shape the direction.", s: { petra: 2, vera: 1 } },
+            { t: "Think through how the idea would actually work in practice.", s: { tomas: 2, vaclav: 1 } },
+            { t: "Challenge the group’s assumptions and point out what might go wrong.", s: { milan: 2, eva: 1 } }
           ]
         },
         {
-          id: "group", q: "When a group has to decide something, you…",
+          id: "uncertain", q: "When the outcome is uncertain, you’re more likely to…",
           options: [
-            { t: "Take charge", s: { petra: 2, eva: 1 } },
-            { t: "Find the compromise", s: { tomas: 2, vaclav: 1 } },
-            { t: "Play devil’s advocate", s: { milan: 2, vera: 1 } }
+            { t: "Act first and adapt.", s: { vera: 2, petra: 2, vaclav: 2 } },
+            { t: "Weigh the risks carefully.", s: { tomas: 2 } },
+            { t: "Wait until you know more.", s: { eva: 2 } }
           ]
         }
       ]

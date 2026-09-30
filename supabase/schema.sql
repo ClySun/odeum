@@ -72,7 +72,8 @@ create table if not exists private.people (
   contact_email        text,                              -- as typed; not verified yet
   name                 text,
   phone                text,
-  age_range            text,
+  age_range            text,                              -- worked out from birth_year when given
+  birth_year           int check (birth_year between 1900 and 2100),
   gender               text,                              -- man | woman | nonbinary | self
   gender_text          text,
   newsletter_opt_in_at timestamptz,
@@ -81,6 +82,7 @@ create table if not exists private.people (
   updated_at           timestamptz not null default now()
 );
 create index if not exists people_by_contact on private.people (lower(contact_email));
+alter table private.people add column if not exists birth_year int check (birth_year between 1900 and 2100);
 
 create table if not exists private.quiz_results (
   person_id  uuid not null references private.people (id) on delete cascade,
@@ -209,6 +211,21 @@ language sql immutable set search_path = '' as $$ select left(nullif(btrim(t), '
 create or replace function private.age_mid(r text) returns numeric
 language sql immutable set search_path = '' as $$
   select case r when '18–21' then 19.5 when '22–25' then 23.5 when '26–35' then 30.5 when '36–40' then 38 when '41+' then 45 end
+$$;
+
+-- Birth year as typed ({"birthYear": "1995"}), or null.
+create or replace function private.birth_year(j jsonb) returns int
+language sql immutable set search_path = '' as $$
+  select case when j ->> 'birthYear' ~ '^\d{4}$' and (j ->> 'birthYear')::int between 1900 and 2100 then (j ->> 'birthYear')::int end
+$$;
+
+-- The age range used for matching, from a birth year.
+create or replace function private.age_range_from_year(y int) returns text
+language sql stable set search_path = '' as $$
+  select case when y is null then null
+              else (select case when a < 18 then null when a <= 21 then '18–21' when a <= 25 then '22–25'
+                                when a <= 35 then '26–35' when a <= 40 then '36–40' else '41+' end
+                    from (select extract(year from current_date)::int - y as a) t) end
 $$;
 
 -- Which characters a player can take: their own gender, unless they chose (nonbinary / self-described).
@@ -520,7 +537,9 @@ begin
     insert into private.people (contact_email) values (v_email) returning id into v_person;
   end if;
   update private.people set name = private.clip(me ->> 'name'), contact_email = v_email, phone = private.clip(me ->> 'phone', 40),
-    age_range = private.clip(me ->> 'age', 10), gender = private.clip(me ->> 'gender', 20), gender_text = private.clip(me ->> 'genderText', 60),
+    birth_year = private.birth_year(me),
+    age_range = coalesce(private.age_range_from_year(private.birth_year(me)), private.clip(me ->> 'age', 10)),
+    gender = private.clip(me ->> 'gender', 20), gender_text = private.clip(me ->> 'genderText', 60),
     newsletter_opt_in_at = case when (me ->> 'newsletter')::boolean then coalesce(newsletter_opt_in_at, now()) when me ? 'newsletter' then null else newsletter_opt_in_at end,
     sms_opt_in_at = case when (me ->> 'sms')::boolean then coalesce(sms_opt_in_at, now()) when me ? 'sms' then null else sms_opt_in_at end,
     updated_at = now()
@@ -764,7 +783,9 @@ begin
   perform private.merge_person(v_seat.person_id, v_me);   -- the placeholder the organizer created becomes theirs
   update private.seats set person_id = v_me where id = v_seat.id;
   update private.people set name = private.clip(me ->> 'name'), phone = private.clip(me ->> 'phone', 40),
-    age_range = private.clip(me ->> 'age', 10), gender = private.clip(me ->> 'gender', 20), gender_text = private.clip(me ->> 'genderText', 60),
+    birth_year = coalesce(private.birth_year(me), birth_year),
+    age_range = coalesce(private.age_range_from_year(private.birth_year(me)), private.clip(me ->> 'age', 10)),
+    gender = private.clip(me ->> 'gender', 20), gender_text = private.clip(me ->> 'genderText', 60),
     newsletter_opt_in_at = case when (me ->> 'newsletter')::boolean then coalesce(newsletter_opt_in_at, now()) when me ? 'newsletter' then null else newsletter_opt_in_at end,
     sms_opt_in_at = case when (me ->> 'sms')::boolean then coalesce(sms_opt_in_at, now()) when me ? 'sms' then null else sms_opt_in_at end,
     updated_at = now()
@@ -792,7 +813,7 @@ declare v_me uuid := private.ensure_person();
 begin
   return jsonb_build_object('ok', true,
     'email', (select email from private.people where id = v_me),
-    'profile', (select jsonb_build_object('name', name, 'phone', phone, 'age', age_range, 'gender', gender, 'genderText', gender_text,
+    'profile', (select jsonb_build_object('name', name, 'phone', phone, 'age', age_range, 'birthYear', birth_year, 'gender', gender, 'genderText', gender_text,
                                           'newsletter', newsletter_opt_in_at is not null, 'sms', sms_opt_in_at is not null)
                 from private.people where id = v_me),
     'bookings', coalesce((
@@ -816,7 +837,9 @@ language plpgsql security definer set search_path = '' as $$
 declare v_me uuid := private.ensure_person();
 begin
   update private.people set name = private.clip(p ->> 'name'), phone = private.clip(p ->> 'phone', 40),
-    age_range = private.clip(p ->> 'age', 10), gender = private.clip(p ->> 'gender', 20), gender_text = private.clip(p ->> 'genderText', 60),
+    birth_year = coalesce(private.birth_year(p), birth_year),
+    age_range = coalesce(private.age_range_from_year(private.birth_year(p)), private.clip(p ->> 'age', 10), age_range),
+    gender = private.clip(p ->> 'gender', 20), gender_text = private.clip(p ->> 'genderText', 60),
     newsletter_opt_in_at = case when p ? 'newsletter' then case when (p ->> 'newsletter')::boolean then coalesce(newsletter_opt_in_at, now()) end else newsletter_opt_in_at end,
     sms_opt_in_at = case when p ? 'sms' then case when (p ->> 'sms')::boolean then coalesce(sms_opt_in_at, now()) end else sms_opt_in_at end,
     updated_at = now()
