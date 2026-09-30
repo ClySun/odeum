@@ -126,7 +126,7 @@ create table if not exists private.seats (
   member_id          text not null,                       -- 'me' = the organizer
   person_id          uuid references private.people (id) on delete set null,
   role               text not null check (role in ('Organizer', 'Friend')),
-  character_gender   text check (character_gender in ('male', 'female')),  -- chosen by nonbinary / self-described players
+  character_gender   text check (character_gender in ('male', 'female')),  -- chosen in the quiz; blank = plays their own gender
   scores             jsonb,                               -- copy of their character scores when this booking was made
   top_matches        text,
   special_requests   text,
@@ -232,7 +232,7 @@ language sql stable set search_path = '' as $$
                     from (select extract(year from current_date)::int - y as a) t) end
 $$;
 
--- Which characters a player can take: their own gender, unless they chose (nonbinary / self-described).
+-- Which characters a player can take: the gender they chose in the quiz, else their own gender.
 create or replace function private.char_need(p_gender text, p_chosen text) returns text
 language sql immutable set search_path = '' as $$
   select case when p_chosen in ('male', 'female') then p_chosen
@@ -608,7 +608,7 @@ begin
   end if;
   insert into private.seats as x (id, booking_id, member_id, person_id, role, character_gender, scores, top_matches, special_requests, quiz_status, updated_at)
   values (p_id || '-me', p_id, 'me', v_person, 'Organizer',
-      case when b ->> 'charGender' in ('male', 'female') and coalesce(me ->> 'gender', '') not in ('man', 'woman') then b ->> 'charGender' end,
+      case when b ->> 'charGender' in ('male', 'female') then b ->> 'charGender' end,   -- anyone may play either gender
       case when v_quiz <> '{}' then p_data -> 'scores' end, private.clip(p_data ->> 'topMatches'), private.clip(b ->> 'requests', 2000),
       case when v_quiz <> '{}' then 'Complete' else 'In progress' end, now())
   on conflict (id) do update set person_id = excluded.person_id, character_gender = excluded.character_gender, scores = excluded.scores,
@@ -867,8 +867,7 @@ begin
     values (v_me, v_booking.game_id, v_quiz, coalesce(p_data -> 'scores', '{}'), private.clip(p_data ->> 'topMatch', 40), now())
     on conflict (person_id, game_id) do update set answers = excluded.answers, scores = excluded.scores, top_match = excluded.top_match, updated_at = now();
   end if;
-  update private.seats set character_gender = case when p_data ->> 'charGender' in ('male', 'female') and coalesce(me ->> 'gender', '') not in ('man', 'woman')
-                                                     then p_data ->> 'charGender' end,
+  update private.seats set character_gender = case when p_data ->> 'charGender' in ('male', 'female') then p_data ->> 'charGender' end,
     scores = p_data -> 'scores', top_matches = private.clip(p_data ->> 'topMatches'),
     special_requests = private.clip(p_data ->> 'requests', 2000), quiz_status = 'Complete', updated_at = now()
   where id = v_seat.id;

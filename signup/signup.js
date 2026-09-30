@@ -239,13 +239,11 @@
   /* ---------------------------------------------------------
      Character fit (the quiz is scored here; table matching happens in the database)
      --------------------------------------------------------- */
-  // Everyone plays a character of their own gender.  Only nonbinary / self-described players
-  // (and friends marked "Other") choose — or, for friends, are open to either.
+  // Everyone chooses which gender of character to play at the start of Character fit. Someone who
+  // hasn't answered yet (e.g. a friend before their own quiz) is matched as playing their own gender.
   function charGenderFor(g) { return g === "man" ? "male" : g === "woman" ? "female" : ""; }
-  function asksCharGender() { return P.me.gender === "nonbinary" || P.me.gender === "self"; }
-  function syncCharGender() {
-    if (P.me && !asksCharGender()) P.charGender = charGenderFor(P.me.gender);
-  }
+  function asksCharGender() { return true; }
+  function syncCharGender() {}
 
   // Fit for every character: everyone starts at 50%, and answers that point to a character add to
   // it, up to 100% for someone who picked every answer pointing that way.
@@ -801,7 +799,7 @@
      Flow
      --------------------------------------------------------- */
   function quizSteps() {
-    var f = asksCharGender() ? ["charGender", "quizIntro"] : ["quizIntro"];
+    var f = ["quizIntro", "charGender"]; // intro, then which gender of character, then the questions
     GAME.quiz.forEach(function (q, i) { f.push("q" + i); });
     if (!emailVerified()) f.push("verifyEmail"); // confirm the email before showing matches
     f.push("result");
