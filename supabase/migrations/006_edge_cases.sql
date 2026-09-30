@@ -1,275 +1,17 @@
 -- =====================================================================================
--- Odeum — Supabase database
--- Paste this whole file into Supabase → SQL Editor → Run.  Safe to run again after edits.
---
--- STRUCTURE (all tables in the `private` schema)
---   games ──< characters                    what can be played
---   games ──< sessions                      one table on one night (two tables a night = two sessions)
---   people                                  one row per human; `email` is set only once verified
---   people × games → quiz_results           latest quiz answers + character scores (overwritten on retake)
---   sessions ──< bookings ──< seats >── people
---   seats ── pairing_comfort                PRIVATE, per person per booking
---   bookings ──< recommendations            every table-matching calculation, kept as a snapshot
---   messages                                every email/nudge sent (so nobody gets one twice)
---
--- PRIVACY
---   The website's key cannot reach the `private` schema, and every table has row-level security
---   with no policies. The site can only call the functions at the bottom of this file; each
---   returns just what one screen needs. Pairing comfort is only ever returned to that person.
---   You (admin) see everything in Table Editor → schema "private".
+-- 006 · Edge-case decisions                                               (30 Sep 2026)
+-- Paste into Supabase → SQL Editor → Run.  Safe to run more than once.
+--  · Any character pick is a requirement (no more "preferred")
+--  · Plus-one: cast as the in-game partner of the organizer's character, reserved together
+--  · Joining friends' table: only the seat count matters
+--  · Friends can be given an optional email; anyone already booked that night is flagged
+--    (seats.admin_note) and a friend is told on their link
+--  · Organizer can add or remove people from their portal
 -- =====================================================================================
 
-create schema if not exists private;
-revoke all on schema private from public, anon, authenticated;
-
--- ---------- tables ----------
-
-create table if not exists private.games (
-  id          text primary key,                           -- short id, e.g. prague
-  title       text not null,
-  era         text,
-  seats       int  not null default 6 check (seats between 1 and 20),
-  time_label  text not null default '6:00–11:00 PM',
-  area        text,                                       -- neighbourhood shown publicly
-  status      text not null default 'Open' check (status in ('Coming soon', 'Open', 'Retired')),
-  description text,
-  image_url   text,
-  created_at  timestamptz not null default now()
-);
-
-create table if not exists private.characters (
-  game_id      text not null references private.games (id) on delete cascade,
-  id           text not null,                             -- e.g. eva
-  name         text not null,
-  gender       text not null check (gender in ('male', 'female')),
-  line         text,                                      -- one-line description
-  portrait_url text,
-  partner_id   text,                                      -- in-game romantic partner (a character id)
-  relationship text,                                      -- e.g. Married
-  sort         int  not null default 0,
-  primary key (game_id, id)
-);
-
-create table if not exists private.sessions (
-  id          uuid primary key default gen_random_uuid(),
-  game_id     text not null references private.games (id),
-  night       date not null,
-  time_label  text,                                       -- blank = the game's usual time
-  seats       int check (seats between 1 and 20),         -- blank = the game's seats
-  status      text not null default 'Open' check (status in ('Open', 'Closed')),
-  area        text,                                       -- blank = the game's area
-  address     text,                                       -- private; sent to players before the game
-  game_master text,
-  note        text,                                       -- for you; never shown
-  created_at  timestamptz not null default now()
-);
-create index if not exists sessions_by_night on private.sessions (game_id, night);
-
-create table if not exists private.people (
-  id                   uuid primary key default gen_random_uuid(),
-  user_id              uuid unique references auth.users (id) on delete set null,
-  email                text unique,                       -- verified with a login code
-  contact_email        text,                              -- as typed; not verified yet
-  name                 text,
-  phone                text,
-  age_range            text,                              -- worked out from birth_year when given
-  birth_year           int check (birth_year between 1900 and 2100),
-  gender               text,                              -- man | woman | nonbinary | self
-  gender_text          text,
-  newsletter_opt_in_at timestamptz,
-  sms_opt_in_at        timestamptz,
-  created_at           timestamptz not null default now(),
-  updated_at           timestamptz not null default now()
-);
-create index if not exists people_by_contact on private.people (lower(contact_email));
-alter table private.people add column if not exists birth_year int check (birth_year between 1900 and 2100);
-
-create table if not exists private.quiz_results (
-  person_id  uuid not null references private.people (id) on delete cascade,
-  game_id    text not null references private.games (id) on delete cascade,
-  answers    jsonb not null default '{}',
-  scores     jsonb not null default '{}',                 -- {"eva": 92, "vera": 71, …} percent fit
-  top_match  text,
-  updated_at timestamptz not null default now(),
-  primary key (person_id, game_id)
-);
-
-create table if not exists private.bookings (
-  id                text primary key,                     -- random id made by the browser
-  draft_secret_hash text not null,                        -- proves the browser that started the draft
-  owner             uuid references auth.users (id) on delete set null,
-  organizer_id      uuid references private.people (id) on delete set null,
-  email             text,                                 -- organizer's email as typed (checked at booking)
-  party_token       text unique,                          -- secret in the one link friends use
-  game_id           text not null references private.games (id),
-  join_session_id   uuid references private.sessions (id) on delete set null,  -- "joining friends" night
-  session_id        uuid references private.sessions (id),
-  status            text not null default 'Draft' check (status in ('Draft', 'Held', 'Booked', 'Cancelled')),
-  hold_expires_at   timestamptz,
-  group_size        int  not null default 1 check (group_size between 1 and 20),
-  real_life_couples jsonb not null default '[]',          -- [["Ana","Ben"]]
-  character_prefs   jsonb not null default '[]',          -- [{"member":"ftwo","who":"Ben","choice":"vera","strength":"required"}]
-  plus_one          boolean not null default false,       -- "Me and my plus-one": cast the pair as an in-game couple
-  special_requests  text,
-  email_verified_at timestamptz,
-  booked_at         timestamptz,
-  last_activity_at  timestamptz not null default now(),
-  created_at        timestamptz not null default now(),
-  updated_at        timestamptz not null default now()
-);
-create index if not exists bookings_by_session on private.bookings (session_id) where status in ('Held', 'Booked');
 alter table private.bookings add column if not exists plus_one boolean not null default false;
-
-create table if not exists private.seats (
-  id                 text primary key,                    -- <booking id>-<member id>
-  booking_id         text not null references private.bookings (id) on delete cascade,
-  member_id          text not null,                       -- 'me' = the organizer
-  person_id          uuid references private.people (id) on delete set null,
-  role               text not null check (role in ('Organizer', 'Friend')),
-  character_gender   text check (character_gender in ('male', 'female')),  -- chosen by nonbinary / self-described players
-  scores             jsonb,                               -- copy of their character scores when this booking was made
-  top_matches        text,
-  special_requests   text,
-  quiz_status        text not null default 'Not started'
-                     check (quiz_status in ('Not started', 'In progress', 'Complete', 'Removed')),
-  assigned_character text,                                -- you fill this in: eva, vaclav, milan, vera, tomas, petra
-  admin_note         text,                                -- flags for the team, e.g. "Also booked in …"
-  updated_at         timestamptz not null default now()
-);
-create index if not exists seats_by_booking on private.seats (booking_id);
-create index if not exists seats_by_person on private.seats (person_id);
 alter table private.seats add column if not exists admin_note text;
 
--- PRIVATE: in-game romantic pairing comfort, per person per booking.
-create table if not exists private.pairing_comfort (
-  seat_id    text primary key references private.seats (id) on delete cascade,
-  comfort    text[] not null default '{}',                -- man | woman | nonbinary
-  updated_at timestamptz not null default now()
-);
-
-create table if not exists private.recommendations (
-  id             bigint generated always as identity primary key,
-  booking_id     text not null references private.bookings (id) on delete cascade,
-  session_id     uuid not null references private.sessions (id) on delete cascade,
-  calculated_at  timestamptz not null,
-  passed         boolean not null,                        -- met every minimum requirement
-  reason         text,                                    -- why not, e.g. "Age gap 11 years"
-  rank           int,                                     -- 1–3 when recommended
-  started        boolean,
-  seats_left     int,
-  age_gap        numeric,
-  comfort_ok     boolean,
-  char_fit       numeric,                                 -- organizer's best open character, %
-  best_character text,
-  score          numeric
-);
-create index if not exists recs_by_booking on private.recommendations (booking_id, calculated_at desc);
-
-create table if not exists private.messages (
-  id         bigint generated always as identity primary key,
-  booking_id text references private.bookings (id) on delete set null,
-  person_id  uuid references private.people (id) on delete set null,
-  kind       text not null,                               -- confirmation | filling_up | table_filled | finish_reminder | …
-  to_email   text,
-  detail     jsonb,
-  sent_at    timestamptz not null default now()
-);
-
-do $$ declare t text; begin
-  foreach t in array array['games', 'characters', 'sessions', 'people', 'quiz_results', 'bookings', 'seats',
-                           'pairing_comfort', 'recommendations', 'messages'] loop
-    execute format('alter table private.%I enable row level security', t);
-  end loop;
-end $$;
-revoke all on all tables in schema private from public, anon, authenticated;
-
--- ---------- starting data (edit freely in Table Editor afterwards) ----------
-
-insert into private.games (id, title, era, seats, area, status, description, image_url) values
-  ('prague', 'Summertime in Prague', 'Czechoslovakia, 1968', 6, 'Upper West Side', 'Open',
-   'You are writers for Dialog, a literary magazine pushing the limits of what can be published.', '/images/mirror.webp')
-on conflict (id) do nothing;
-
-insert into private.characters (game_id, id, name, gender, line, portrait_url, partner_id, relationship, sort) values
-  ('prague', 'eva',    'Eva',    'female', 'Art & culture critic. Speaks three languages.',            '/images/prague/cast/eva.jpg',    'vaclav', 'Married', 1),
-  ('prague', 'vaclav', 'Vaclav', 'male',   'Poet. Full of charm; the world is dreamier in his eyes.',  '/images/prague/cast/vaclav.jpg', 'eva',    'Married', 2),
-  ('prague', 'milan',  'Milan',  'male',   'Absurdist storyteller who wanders the city’s cemeteries.', '/images/prague/cast/milan.jpg',  'vera',   'Dating', 3),
-  ('prague', 'vera',   'Vera',   'female', 'Rock-scene writer and drummer. Hard to approach at first.', '/images/prague/cast/vera.jpg',  'milan',  'Dating', 4),
-  ('prague', 'tomas',  'Tomas',  'male',   'Literature teacher who sneaks banned books to students.',  '/images/prague/cast/tomas.jpg',  'petra',  'Married with kids', 5),
-  ('prague', 'petra',  'Petra',  'female', 'Theatre director. “Small but mighty.”',                    '/images/prague/cast/petra.jpg',  'tomas',  'Married with kids', 6)
-on conflict do nothing;
-
-insert into private.sessions (game_id, night)
-select 'prague', d::date from unnest(array['2026-10-23', '2026-10-24', '2026-10-30', '2026-10-31', '2026-11-06', '2026-11-07',
-                                           '2026-11-13', '2026-11-14', '2026-11-20', '2026-11-21', '2026-11-27', '2026-11-28']) d
-where not exists (select 1 from private.sessions where game_id = 'prague');
-
--- ---------- private helpers (not callable from the website) ----------
-
-create or replace function private.hash(t text) returns text
-language sql immutable set search_path = '' as $$ select encode(sha256(convert_to(coalesce(t, ''), 'UTF8')), 'hex') $$;
-
-create or replace function private.clip(t text, n int default 200) returns text
-language sql immutable set search_path = '' as $$ select left(nullif(btrim(t), ''), n) $$;
-
-create or replace function private.age_mid(r text) returns numeric
-language sql immutable set search_path = '' as $$
-  select case r when '18–21' then 19.5 when '22–25' then 23.5 when '26–35' then 30.5 when '36–40' then 38 when '41+' then 45 end
-$$;
-
--- Birth year as typed ({"birthYear": "1995"}), or null.
-create or replace function private.birth_year(j jsonb) returns int
-language sql immutable set search_path = '' as $$
-  select case when j ->> 'birthYear' ~ '^\d{4}$' and (j ->> 'birthYear')::int between 1900 and 2100 then (j ->> 'birthYear')::int end
-$$;
-
--- The age range used for matching, from a birth year.
-create or replace function private.age_range_from_year(y int) returns text
-language sql stable set search_path = '' as $$
-  select case when y is null then null
-              else (select case when a < 18 then null when a <= 21 then '18–21' when a <= 25 then '22–25'
-                                when a <= 35 then '26–35' when a <= 40 then '36–40' else '41+' end
-                    from (select extract(year from current_date)::int - y as a) t) end
-$$;
-
--- Which characters a player can take: their own gender, unless they chose (nonbinary / self-described).
-create or replace function private.char_need(p_gender text, p_chosen text) returns text
-language sql immutable set search_path = '' as $$
-  select case when p_chosen in ('male', 'female') then p_chosen
-              when p_gender = 'man' then 'male' when p_gender = 'woman' then 'female' else 'any' end
-$$;
-
-create or replace function private.comfort_array(j jsonb) returns text[]
-language sql immutable set search_path = '' as $$
-  select coalesce(array_agg(distinct v), '{}')
-  from jsonb_array_elements_text(case when jsonb_typeof(j) = 'array' then j else '[]' end) v
-  where v in ('man', 'woman', 'nonbinary')
-$$;
-
-create or replace function private.signed_in_email() returns text
-language sql stable set search_path = '' as $$ select lower(nullif(auth.jwt() ->> 'email', '')) $$;
-
-create or replace function private.night_label(p_session uuid) returns text
-language sql stable set search_path = '' as $$
-  select to_char(s.night, 'FMDay, FMMonth FMDD, YYYY') || ' · ' || coalesce(nullif(s.time_label, ''), g.time_label)
-  from private.sessions s join private.games g on g.id = s.game_id where s.id = p_session
-$$;
-
--- Seats taken at a session by OTHER bookings (booked, or held and not yet expired).
-create or replace function private.table_seats(p_session uuid, p_except text)
-returns table (seat_id text, gender text, need text, assigned text, age numeric)
-language sql stable set search_path = '' as $$
-  select s.id, p.gender, private.char_need(p.gender, s.character_gender), lower(nullif(s.assigned_character, '')),
-         private.age_mid(p.age_range)
-  from private.seats s
-  join private.bookings b on b.id = s.booking_id
-  left join private.people p on p.id = s.person_id
-  where b.session_id = p_session and b.id is distinct from p_except and s.quiz_status <> 'Removed'
-    and (b.status = 'Booked' or (b.status = 'Held' and b.hold_expires_at > now()))
-$$;
-
--- Checks one table for one booking. Returns the minimum requirements separately, so the same
--- check serves recommendations (all must pass) and "all available dates" (age only warns).
 create or replace function private.evaluate(p_booking text, p_session uuid) returns jsonb
 language plpgsql stable set search_path = '' as $$
 declare
@@ -413,125 +155,25 @@ language sql immutable set search_path = '' as $$
               when not (e ->> 'ageOk')::boolean then 'Age gap ' || (e ->> 'ageGap') || ' years' end
 $$;
 
-create or replace function private.can_edit(v private.bookings, p_secret text) returns boolean
-language sql stable set search_path = '' as $$
-  select v.draft_secret_hash = private.hash(p_secret) or (auth.uid() is not null and v.owner = auth.uid())
-$$;
-
--- Moves everything from one person record into another, then deletes the first.
-create or replace function private.merge_person(p_from uuid, p_into uuid) returns void
+create or replace function private.assign_organizer(p_id text, e jsonb) returns text
 language plpgsql set search_path = '' as $$
+declare v_req text; v_char text; v_partner text; v_plus boolean; v_game text;
 begin
-  if p_from is null or p_into is null or p_from = p_into then return; end if;
-  update private.seats set person_id = p_into where person_id = p_from;
-  update private.bookings set organizer_id = p_into where organizer_id = p_from;
-  update private.messages set person_id = p_into where person_id = p_from;
-  insert into private.quiz_results (person_id, game_id, answers, scores, top_match, updated_at)
-  select p_into, q.game_id, q.answers, q.scores, q.top_match, q.updated_at from private.quiz_results q where q.person_id = p_from
-  on conflict (person_id, game_id) do update set answers = excluded.answers, scores = excluded.scores,
-    top_match = excluded.top_match, updated_at = excluded.updated_at
-  where excluded.updated_at > private.quiz_results.updated_at;
-  update private.people t set name = coalesce(t.name, f.name), phone = coalesce(t.phone, f.phone),
-    age_range = coalesce(t.age_range, f.age_range), gender = coalesce(t.gender, f.gender),
-    gender_text = coalesce(t.gender_text, f.gender_text),
-    newsletter_opt_in_at = coalesce(t.newsletter_opt_in_at, f.newsletter_opt_in_at),
-    sms_opt_in_at = coalesce(t.sms_opt_in_at, f.sms_opt_in_at), updated_at = now()
-  from private.people f where t.id = p_into and f.id = p_from;
-  delete from private.people where id = p_from;
-end $$;
-
--- The signed-in person's record: found by login, else by verified email, else created. Any
--- unverified records typed with this email (e.g. a friend's quiz) are merged in.
-create or replace function private.ensure_person() returns uuid
-language plpgsql set search_path = '' as $$
-declare v_email text := private.signed_in_email(); v_id uuid; r record;
-begin
-  if auth.uid() is null or v_email is null then raise exception 'not_signed_in'; end if;
-  select id into v_id from private.people where user_id = auth.uid();
-  if v_id is null then select id into v_id from private.people where email = v_email; end if;
-  if v_id is null then
-    insert into private.people (user_id, email, contact_email) values (auth.uid(), v_email, v_email) returning id into v_id;
-  else
-    update private.people set user_id = auth.uid(), email = v_email where id = v_id;
+  select b.plus_one, b.game_id into v_plus, v_game from private.bookings b where b.id = p_id;
+  select r ->> 'choice' into v_req from private.bookings b, jsonb_array_elements(b.character_prefs) r
+  where b.id = p_id and r ->> 'member' = 'me' and r ->> 'choice' not in ('anyF', 'anyM', 'none')
+    and (e -> 'openCharacters') ? (r ->> 'choice') limit 1;
+  v_char := coalesce(v_req, e ->> 'bestCharacter');
+  update private.seats set assigned_character = v_char, updated_at = now() where id = p_id || '-me';
+  if v_plus then
+    select c.partner_id into v_partner from private.characters c
+    where c.game_id = v_game and c.id = v_char and (e -> 'openCharacters') ? c.partner_id;
+    update private.seats set assigned_character = v_partner, updated_at = now()
+    where booking_id = p_id and role = 'Friend' and quiz_status <> 'Removed';
   end if;
-  for r in select id from private.people where id <> v_id and email is null and lower(contact_email) = v_email loop
-    perform private.merge_person(r.id, v_id);
-  end loop;
-  return v_id;
+  return v_char;
 end $$;
 
--- Admin: seat someone by hand. Run in SQL Editor, e.g.
---   select private.admin_add_player((select id from private.sessions where night = '2026-10-24' limit 1),
---                                   'Jane Doe', 'jane@example.com', '26–35', 'woman', 'eva');
-create or replace function private.admin_add_player(p_session uuid, p_name text, p_email text, p_age_range text,
-                                                    p_gender text, p_character text default null) returns text
-language plpgsql security definer set search_path = '' as $$
-declare v_id text := 'admin' || substr(md5(random()::text || clock_timestamp()::text), 1, 12); v_person uuid;
-begin
-  select id into v_person from private.people where email = lower(p_email) or lower(contact_email) = lower(p_email) limit 1;
-  if v_person is null then
-    insert into private.people (contact_email, name, age_range, gender) values (lower(p_email), p_name, p_age_range, p_gender)
-    returning id into v_person;
-  end if;
-  insert into private.bookings (id, draft_secret_hash, organizer_id, email, game_id, session_id, status, group_size, booked_at)
-  select v_id, private.hash(v_id || random()::text), v_person, lower(p_email), s.game_id, s.id, 'Booked', 1, now()
-  from private.sessions s where s.id = p_session;
-  insert into private.seats (id, booking_id, member_id, person_id, role, quiz_status, assigned_character)
-  values (v_id || '-me', v_id, 'me', v_person, 'Organizer', 'Not started', nullif(lower(p_character), ''));
-  return v_id;
-end $$;
-
--- Admin: someone asked to be forgotten. Run in SQL Editor:  select private.admin_forget('jane@example.com');
--- Deletes their login, drafts, quiz results and pairing answers, and blanks their details. Seats
--- they held stay counted until you cancel that booking.
-create or replace function private.admin_forget(p_email text) returns text
-language plpgsql security definer set search_path = '' as $$
-declare v text := lower(btrim(p_email));
-begin
-  delete from private.bookings where status = 'Draft' and lower(email) = v;
-  delete from private.pairing_comfort where seat_id in
-    (select x.id from private.seats x join private.people p on p.id = x.person_id where p.email = v or lower(p.contact_email) = v);
-  delete from private.quiz_results where person_id in (select id from private.people where email = v or lower(contact_email) = v);
-  update private.people set name = '(deleted)', email = null, contact_email = null, phone = null, gender_text = null,
-         newsletter_opt_in_at = null, sms_opt_in_at = null, user_id = null, updated_at = now()
-  where email = v or lower(contact_email) = v;
-  update private.bookings set email = null, special_requests = null, updated_at = now() where lower(email) = v;
-  delete from auth.users where lower(email) = v;
-  return 'Forgot ' || v;
-end $$;
-
--- ---------- website API ----------
-
--- The game and its cast (public information).
-create or replace function public.game_info(p_game text default 'prague') returns jsonb
-language sql stable security definer set search_path = '' as $$
-  select coalesce((
-    select jsonb_build_object('ok', true, 'v', 3, 'id', g.id, 'title', g.title, 'era', g.era, 'seats', g.seats,
-      'time', g.time_label, 'area', g.area,
-      'characters', (select jsonb_agg(jsonb_build_object('id', c.id, 'name', c.name, 'gender', c.gender, 'line', c.line,
-                       'art', c.portrait_url, 'partner', c.partner_id, 'relationship', c.relationship) order by c.sort)
-                     from private.characters c where c.game_id = g.id))
-    from private.games g where g.id = p_game and g.status <> 'Retired'),
-    jsonb_build_object('ok', false, 'error', 'not_found'))
-$$;
-
--- Upcoming open tables with seat counts. No names, contacts or ages.
-create or replace function public.availability(p_game text default 'prague') returns jsonb
-language sql stable security definer set search_path = '' as $$
-  select jsonb_build_object('ok', true, 'v', 3, 'sessions', coalesce(jsonb_agg(t.x order by t.x ->> 'date', t.x ->> 'id'), '[]'))
-  from (
-    select jsonb_build_object('id', s.id, 'date', to_char(s.night, 'YYYY-MM-DD'),
-             'time', coalesce(nullif(s.time_label, ''), g.time_label), 'area', coalesce(nullif(s.area, ''), g.area),
-             'seats', coalesce(s.seats, g.seats),
-             'seatsLeft', greatest(coalesce(s.seats, g.seats) - (select count(*) from private.table_seats(s.id, null)), 0),
-             'started', exists (select 1 from private.table_seats(s.id, null))) as x
-    from private.sessions s join private.games g on g.id = s.game_id
-    where s.game_id = p_game and s.status = 'Open' and s.night > current_date
-  ) t
-$$;
-
--- Saves the organizer's form as they go (before email verification). Only the browser holding the
--- draft's secret — or its verified owner — can change it. A booked booking is never changed here.
 create or replace function public.save_draft(p_id text, p_secret text, p_data jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare
@@ -644,10 +286,6 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
--- Recommended tables: minimum requirements first (seats, a character for everyone, pairing comfort,
--- age within 10 years; a Required character only if one was asked for). Started tables only — new
--- tables, soonest first, fill in only when fewer than 3 started tables pass. Every table checked is
--- saved to recommendations with the reason it was or wasn't suggested.
 create or replace function public.recommend(p_id text, p_secret text) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v private.bookings; v_now timestamptz := clock_timestamp(); v_prev timestamptz; s record; e jsonb; v_started int;
@@ -695,46 +333,6 @@ begin
                                   and n.session_id = p.session_id and n.passed)), '[]'));
 end $$;
 
--- "See all available dates": every open table, with what this booking needs to know about it.
--- Age only warns here; a table is bookable if seats, characters, requests and comfort work.
-create or replace function public.browse_tables(p_id text, p_secret text) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-declare v private.bookings;
-begin
-  select * into v from private.bookings where id = p_id;
-  if not found or not private.can_edit(v, p_secret) then raise exception 'forbidden'; end if;
-  return jsonb_build_object('ok', true, 'sessions', coalesce((
-    select jsonb_agg(jsonb_build_object('sessionId', t.id, 'date', to_char(t.night, 'YYYY-MM-DD'), 'time', t.time,
-             'started', (t.e ->> 'started')::boolean, 'seatsLeft', (t.e ->> 'seatsLeft')::int, 'bookable', private.bookable(t.e),
-             'reason', private.reason(t.e), 'ageGap', t.e -> 'ageGap', 'tableAge', t.e -> 'tableAge',
-             'openCharacters', t.e -> 'openCharacters') order by t.night, t.created_at)
-    from (select x.id, x.night, x.created_at, coalesce(nullif(x.time_label, ''), g.time_label) as time, private.evaluate(p_id, x.id) as e
-          from private.sessions x join private.games g on g.id = x.game_id
-          where x.game_id = v.game_id and x.status = 'Open' and x.night > current_date) t), '[]'));
-end $$;
-
--- Gives the organizer their character at this table: the one they required, else their best fit
--- among the characters still open there. Other players' characters are assigned by the team.
-create or replace function private.assign_organizer(p_id text, e jsonb) returns text
-language plpgsql set search_path = '' as $$
-declare v_req text; v_char text; v_partner text; v_plus boolean; v_game text;
-begin
-  select b.plus_one, b.game_id into v_plus, v_game from private.bookings b where b.id = p_id;
-  select r ->> 'choice' into v_req from private.bookings b, jsonb_array_elements(b.character_prefs) r
-  where b.id = p_id and r ->> 'member' = 'me' and r ->> 'choice' not in ('anyF', 'anyM', 'none')
-    and (e -> 'openCharacters') ? (r ->> 'choice') limit 1;
-  v_char := coalesce(v_req, e ->> 'bestCharacter');
-  update private.seats set assigned_character = v_char, updated_at = now() where id = p_id || '-me';
-  if v_plus then
-    select c.partner_id into v_partner from private.characters c
-    where c.game_id = v_game and c.id = v_char and (e -> 'openCharacters') ? c.partner_id;
-    update private.seats set assigned_character = v_partner, updated_at = now()
-    where booking_id = p_id and role = 'Friend' and quiz_status <> 'Removed';
-  end if;
-  return v_char;
-end $$;
-
--- Holds the seats for 30 minutes while the organizer confirms, and reserves the organizer's character.
 create or replace function public.hold_table(p_id text, p_secret text, p_session uuid) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v private.bookings; e jsonb; v_char text; v_partner text;
@@ -756,24 +354,6 @@ begin
   return jsonb_build_object('ok', true, 'holdExpiresAt', now() + interval '30 minutes', 'character', v_char, 'partnerCharacter', v_partner);
 end $$;
 
--- After the organizer verifies their email (Supabase Auth code), attach the booking to their account.
-create or replace function public.claim_booking(p_id text, p_secret text) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-declare v private.bookings; v_email text := private.signed_in_email(); v_me uuid;
-begin
-  if auth.uid() is null or v_email is null then raise exception 'not_signed_in'; end if;
-  select * into v from private.bookings where id = p_id for update;
-  if not found then return jsonb_build_object('ok', false, 'error', 'not_found'); end if;
-  if not private.can_edit(v, p_secret) then raise exception 'forbidden'; end if;
-  if v.email is distinct from v_email then return jsonb_build_object('ok', false, 'error', 'email_mismatch'); end if;
-  v_me := private.ensure_person();
-  perform private.merge_person(v.organizer_id, v_me);
-  update private.bookings set owner = auth.uid(), organizer_id = v_me, email_verified_at = now(), updated_at = now() where id = p_id;
-  return jsonb_build_object('ok', true);
-end $$;
-
--- Confirms the booking (free during testing). Needs a verified email and a hold; an expired hold is
--- renewed if the table still has room. Runs under a per-table lock so the last seat can't go twice.
 create or replace function public.book(p_id text) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v private.bookings; e jsonb;
@@ -814,27 +394,6 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
--- Friend link: who's in the party (so each friend can pick themselves). Needs the secret link.
-create or replace function public.party_info(p_token text) returns jsonb
-language sql stable security definer set search_path = '' as $$
-  select coalesce((
-    select jsonb_build_object('ok', true,
-      'organizer', split_part(coalesce(op.name, ''), ' ', 1), 'game', b.game_id,
-      'sessionLabel', private.night_label(b.session_id),
-      'members', coalesce((select jsonb_agg(jsonb_build_object('id', x.member_id, 'name', p.name, 'age', p.age_range,
-                                                              'gender', p.gender, 'done', x.quiz_status = 'Complete',
-                                                              -- in a real-life couple within this party (yes/no only)
-                                                              'partnered', exists (select 1 from jsonb_array_elements(b.real_life_couples) c where c ? p.name)) order by p.name)
-                          from private.seats x left join private.people p on p.id = x.person_id
-                          where x.booking_id = b.id and x.role = 'Friend' and x.quiz_status <> 'Removed'), '[]'))
-    from private.bookings b left join private.people op on op.id = b.organizer_id
-    where length(coalesce(p_token, '')) >= 12 and b.party_token = p_token and b.status = 'Booked'),
-    jsonb_build_object('ok', false, 'error', 'not_found'))
-$$;
-
--- A friend submits their own details + quiz through the party link, after verifying their email
--- with a sign-in code (they must be signed in as the email they submit). Their record becomes
--- their own verified person record. Once complete it can't be overwritten through the link.
 create or replace function public.friend_submit(p_token text, p_member_id text, p_data jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v_booking private.bookings; v_seat private.seats; me jsonb := coalesce(p_data -> 'me', '{}');
@@ -887,8 +446,6 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
--- The signed-in person's portal: their details and their own bookings. For the rest of each party
--- it shows first names and whether each has finished the quiz — never anyone else's answers.
 create or replace function public.my_portal() returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v_me uuid := private.ensure_person();
@@ -918,22 +475,6 @@ begin
         where me.person_id = v_me and me.quiz_status <> 'Removed' and b.status in ('Booked', 'Cancelled')) q), '[]'));
 end $$;
 
-create or replace function public.update_profile(p jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-declare v_me uuid := private.ensure_person();
-begin
-  update private.people set name = private.clip(p ->> 'name'), phone = private.clip(p ->> 'phone', 40),
-    birth_year = coalesce(private.birth_year(p), birth_year),
-    age_range = coalesce(private.age_range_from_year(private.birth_year(p)), private.clip(p ->> 'age', 10), age_range),
-    gender = private.clip(p ->> 'gender', 20), gender_text = private.clip(p ->> 'genderText', 60),
-    newsletter_opt_in_at = case when p ? 'newsletter' then case when (p ->> 'newsletter')::boolean then coalesce(newsletter_opt_in_at, now()) end else newsletter_opt_in_at end,
-    sms_opt_in_at = case when p ? 'sms' then case when (p ->> 'sms')::boolean then coalesce(sms_opt_in_at, now()) end else sms_opt_in_at end,
-    updated_at = now()
-  where id = v_me;
-  return jsonb_build_object('ok', true);
-end $$;
-
--- Organizer adds someone to a booked table from their portal (if a seat is free).
 create or replace function public.portal_add_person(p_id text, p jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v private.bookings; v_me uuid := private.ensure_person(); v_left int; v_person uuid; v_member text;
@@ -957,7 +498,6 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
--- Organizer removes someone from their booking (their seat is freed; refunds follow the usual policy).
 create or replace function public.portal_remove_person(p_id text, p_member text) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v_me uuid := private.ensure_person();
@@ -971,27 +511,6 @@ begin
   return jsonb_build_object('ok', true);
 end $$;
 
-create or replace function public.cancel_booking(p_id text) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-declare v_me uuid := private.ensure_person();
-begin
-  update private.bookings set status = 'Cancelled', hold_expires_at = null, updated_at = now()
-  where id = p_id and organizer_id = v_me and status in ('Held', 'Booked');
-  if not found then return jsonb_build_object('ok', false, 'error', 'not_found'); end if;
-  return jsonb_build_object('ok', true);
-end $$;
-
--- ---------- who may call what ----------
-revoke all on all functions in schema private from public, anon, authenticated;
-revoke all on function public.game_info(text), public.availability(text), public.save_draft(text, text, jsonb),
-  public.recommend(text, text), public.browse_tables(text, text), public.hold_table(text, text, uuid),
-  public.claim_booking(text, text), public.book(text), public.party_info(text), public.friend_submit(text, text, jsonb),
-  public.my_portal(), public.update_profile(jsonb), public.cancel_booking(text),
-  public.portal_add_person(text, jsonb), public.portal_remove_person(text, text) from public, anon, authenticated;
-
-grant execute on function public.game_info(text), public.availability(text), public.save_draft(text, text, jsonb),
-  public.recommend(text, text), public.browse_tables(text, text), public.hold_table(text, text, uuid),
-  public.party_info(text) to anon, authenticated;
-grant execute on function public.claim_booking(text, text), public.book(text), public.friend_submit(text, text, jsonb),
-  public.my_portal(), public.update_profile(jsonb), public.cancel_booking(text),
-  public.portal_add_person(text, jsonb), public.portal_remove_person(text, text) to authenticated;
+revoke all on function private.assign_organizer(text, jsonb) from public, anon, authenticated;
+revoke all on function public.portal_add_person(text, jsonb), public.portal_remove_person(text, text) from public, anon, authenticated;
+grant execute on function public.portal_add_person(text, jsonb), public.portal_remove_person(text, text) to authenticated;

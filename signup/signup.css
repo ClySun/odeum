@@ -237,3 +237,8 @@ a.inline:hover { color: var(--wine); border-color: var(--wine); }
 
 .req { color: var(--wine); margin-left: 0.2em; }
 .title .req { font-size: 0.6em; vertical-align: super; }
+
+.linkbtn--small { font-size: 0.78rem; margin-left: 0.3rem; }
+.addperson { margin-top: 1.25rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 12px; }
+.addperson .h3 { margin-top: 0; margin-bottom: 1rem; font-size: 1.15rem; }
+select option:disabled { color: var(--ink-faint); }

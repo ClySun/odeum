@@ -201,7 +201,7 @@
                  mode: P.mode, friends: P.friends.map(function (f) { return { id: f.id, name: f.name }; }),
                  me: { name: P.me.name, email: P.me.email } };
       }
-      if (P.kind === "friend" && P.step === "fDone") keep = { kind: "friend", step: "fDone", me: { name: P.me.name } };
+      if (P.kind === "friend" && P.step === "fDone") keep = { kind: "friend", step: "fDone", me: { name: P.me.name }, alreadyBooked: P.alreadyBooked, organizer: P.organizer };
       store(P.kind === "friend" ? partyKey() : DRAFT_KEY, keep);
     }
   }
@@ -222,6 +222,7 @@
     delete b.secret; delete b.code; delete b.codeSentTo; delete b.emailVerified; delete b.step; delete b.party; delete b.pick;
     if (!P.comfortTouched) delete b.comfort; // don't overwrite a saved answer with an empty one after a reload
     delete b.comfortTouched;
+    b.plusOne = b.mode === "plusone";
     if (b.mode === "plusone") {
       b.mode = "group";
       b.couples = P.friends[0] ? [["me", P.friends[0].id]] : []; // a plus-one is taken to be a real-life partner
@@ -319,7 +320,8 @@
       '<p class="scard__meta">' + esc(t.time) + " · " + (t.started ? t.seatsLeft + " seat" + (t.seatsLeft === 1 ? "" : "s") + " left" : "New table") +
       (label ? ' · <span class="scard__match">' + label + "</span>" : "") +
       (!joining && t.started && t.ageGap != null && t.ageGap <= 5 ? " · Players around your age" : "") + "</p>" +
-      (me ? '<p class="scard__you">You’d play <strong>' + esc(me.name) + "</strong>" + (t.charFit != null ? ' <span>· ' + Math.round(t.charFit) + "% match</span>" : "") + "</p>" : "") +
+      (me ? '<p class="scard__you">You’d play <strong>' + esc(me.name) + "</strong>" + (t.charFit != null ? ' <span>· ' + Math.round(t.charFit) + "% match</span>" : "") +
+        (t.partnerCharacter && charById(t.partnerCharacter) ? ' <span>· your plus-one plays</span> <strong>' + esc(charById(t.partnerCharacter).name) + "</strong>" : "") + "</p>" : "") +
       "</div>" +
       '<button type="button" class="btn" data-act="pickTable" data-v="' + esc(t.sessionId) + '"' + (busy ? " disabled" : "") + '>Book this date</button></div>' +
       '<details class="scard__more"><summary>View available characters</summary><div class="thumbs">' +
@@ -330,8 +332,12 @@
   // Tables as a compact row of date tiles (SAT / 24 / OCT).
   // pick(t) -> false (shown as full) | true | a short note under the date, e.g. "2 left".
   function dateTiles(list, selected, pick) {
+    var seen = {};
     return '<div class="dates__row">' + list.map(function (t) {
       var ok = pick(t), d = new Date(t.date + "T12:00:00"), id = t.sessionId || t.id;
+      var sameNight = list.filter(function (x) { return x.date === t.date; }).length > 1;
+      seen[t.date] = (seen[t.date] || 0) + 1;
+      if (sameNight && ok) ok = "Table " + seen[t.date] + (typeof ok === "string" ? " · " + ok : "");
       var inner = '<span class="date__dow">' + d.toLocaleDateString("en-US", { weekday: "short" }) + '</span><span class="date__num">' + d.getDate() +
         '</span><span class="date__mon">' + d.toLocaleDateString("en-US", { month: "short" }) + "</span>";
       return ok
@@ -404,6 +410,7 @@
             return '<fieldset class="friend"><legend>' + (one ? "Your plus-one" : "Friend " + (i + 1)) + "</legend>" +
               (P.friends.length > 1 ? '<button type="button" class="friend__x" data-act="rmFriend" data-v="' + i + '" aria-label="Remove">Remove</button>' : "") +
               field(req("Full name"), b + ".name") +
+              field("Email (optional)", b + ".email", "email", 'autocomplete="off"') +
               '<div class="field"><span>' + req("Age") + '</span>' + chips(b + ".age", AGES.map(function (a) { return [a, a]; }), f.age) + "</div>" +
               genderBlock(b, FRIEND_GENDERS) + "</fieldset>";
           }).join("") +
@@ -413,6 +420,7 @@
         for (var i = 0; i < P.friends.length; i++) {
           var f = P.friends[i];
           if (!f.name.trim() || !f.age || !f.gender) return "Please complete Friend " + (i + 1) + ".";
+          if (f.email && !validEmail(f.email)) return "Please check Friend " + (i + 1) + "’s email, or leave it blank.";
         }
         return "";
       }
@@ -580,6 +588,7 @@
           "<dt>Date</dt><dd>" + fmtDate(P.sessionDate, true) + " · " + esc(P.sessionTime || GAME.time) + "</dd>" +
           "<dt>Where</dt><dd>" + esc(GAME.area || GAME.place) + " (address sent before the game)</dd>" +
           (P.myCharacter && charById(P.myCharacter) ? "<dt>You play</dt><dd>" + esc(charById(P.myCharacter).name) + "</dd>" : "") +
+          (P.partnerCharacter && charById(P.partnerCharacter) ? "<dt>Your plus-one plays</dt><dd>" + esc(charById(P.partnerCharacter).name) + "</dd>" : "") +
           "<dt>Players</dt><dd>" + members().map(function (m) { return esc(m.name); }).join(", ") + "</dd>" +
           "<dt>Seats</dt><dd>" + size + " · free during the testing period</dd>" +
           "</dl>" +
@@ -640,6 +649,8 @@
       stage: 2, noNext: true, noBack: true,
       render: function () {
         return head("All set", "Thank you, " + esc(first(P.me.name)) + ".", "We’ll assign your character before the game and send you everything you need.") +
+          (P.alreadyBooked ? '<p class="warn">It looks like you already have a seat that night in another booking. We’ll sort it out with you and ' +
+            (P.organizer ? esc(first(P.organizer)) : "the person who booked") + ".</p>" : "") +
           '<p class="note">See your booking any time in <a class="inline" href="./?portal">your Odeum portal</a>.</p>' +
           '<button type="button" class="linkbtn linkbtn--big" data-act="someoneElse">Filling this in for someone else in your party? →</button>';
       }
@@ -707,11 +718,27 @@
       (b.requests ? "<dt>Your requests</dt><dd>" + esc(b.requests) + "</dd>" : "") +
       (comfort.length ? "<dt>Pairing comfort</dt><dd>" + comfort.join(", ") + ' <span class="note">(only you can see this)</span></dd>' : "") +
       "<dt>Your party</dt><dd>" + (b.party || []).map(function (m) {
-        return esc(m.name) + (m.you ? " (you)" : "") + ' <span class="' + (m.done ? "ok" : "wait") + '">' + (m.done ? "✓" : "quiz pending") + "</span>";
+        return esc(m.name) + (m.you ? " (you)" : "") + ' <span class="' + (m.done ? "ok" : "wait") + '">' + (m.done ? "✓" : "quiz pending") + "</span>" +
+          (b.isOrganizer && !cancelled && b.upcoming && !m.organizer ? ' <button type="button" class="linkbtn linkbtn--small" data-act="removePerson" data-b="' + esc(b.id) + '" data-v="' + esc(m.member) + '">Remove</button>' : "");
       }).join(" · ") + "</dd></dl>" +
+      (b.isOrganizer && !cancelled && b.upcoming ? addPersonBlock(b) : "") +
       (link && !cancelled && (b.party || []).length > 1 ? '<div class="flink"><input readonly value="' + esc(link) + '" /><button type="button" class="btn btn--ghost" data-act="copyLink" data-v="' + esc(link) + '">Copy link</button></div>' : "") +
       (b.isOrganizer && !cancelled ? '<p class="note"><button type="button" class="linkbtn" data-act="cancelBooking" data-v="' + esc(b.id) + '">Cancel this booking</button></p>' : "") +
       "</article>";
+  }
+  // Organizer adds someone to a booked table (if a seat is free).
+  function addPersonBlock(b) {
+    if (P.addFor !== b.id) {
+      return b.seatsLeft > 0 ? '<p class="note"><button type="button" class="linkbtn" data-act="addPersonOpen" data-v="' + esc(b.id) + '">+ Add a person</button> · ' +
+        b.seatsLeft + " seat" + (b.seatsLeft === 1 ? "" : "s") + " left at this table</p>" : '<p class="note">This table is full.</p>';
+    }
+    return '<div class="addperson"><h4 class="h3">Add a person</h4>' +
+      field(req("Full name"), "add.name") + field("Email (optional)", "add.email", "email") +
+      '<div class="field"><span>' + req("Age") + "</span>" + chips("add.age", AGES.map(function (a) { return [a, a]; }), P.add.age) + "</div>" +
+      genderBlock("add", FRIEND_GENDERS) +
+      '<button type="button" class="btn" data-act="addPersonSave" data-v="' + esc(b.id) + '">Add to table</button> &nbsp; ' +
+      '<button type="button" class="linkbtn" data-act="addPersonCancel">Cancel</button>' +
+      '<p class="note">They’ll use your party link to take their own character quiz.</p></div>';
   }
   function privacyNote() {
     return '<p class="private"><span aria-hidden="true">🔒</span> We use your details only to match you to the game table that’s best for you.</p>';
@@ -737,7 +764,10 @@
       (advance ? ' data-advance="1"' : "") + "><strong>" + title + "</strong>" + (sub ? "<span>" + sub + "</span>" : "") + "</button>";
   }
   function prefRow(m) {
-    var pr = P.prefs[m.id] || { choice: "none", strength: "preferred" };
+    var pr = P.prefs[m.id] || { choice: "none" };
+    var takenByOthers = Object.keys(P.prefs || {}).filter(function (k) {
+      return k !== m.id && members().some(function (x) { return x.id === k; });
+    }).map(function (k) { return P.prefs[k] && P.prefs[k].choice; });
     var cg = m.isMe ? P.charGender : charGenderFor(m.gender);
     var chars = GAME.characters.filter(function (c) { return !cg || c.gender === cg; });
     var opts = [["none", "Open to any character"]];
@@ -745,10 +775,10 @@
     opts = opts.concat(chars.map(function (c) { return [c.id, c.name]; }));
     return '<div class="pref"><strong>' + esc(m.name) + (m.isMe ? " (you)" : "") + "</strong>" +
       '<select data-k="prefs.' + m.id + '.choice">' + opts.map(function (o) {
-        return '<option value="' + o[0] + '"' + (pr.choice === o[0] ? " selected" : "") + ">" + o[1] + "</option>";
-      }).join("") + "</select>" +
-      (pr.choice && pr.choice !== "none" ? chips("prefs." + m.id + ".strength", [["preferred", "Preferred"], ["required", "Required"]], pr.strength || "preferred") : "") +
-      "</div>";
+        var taken = charById(o[0]) && takenByOthers.indexOf(o[0]) >= 0;
+        return '<option value="' + o[0] + '"' + (pr.choice === o[0] ? " selected" : "") + (taken ? " disabled" : "") + ">" +
+          o[1] + (taken ? " (picked by someone else)" : "") + "</option>";
+      }).join("") + "</select></div>";
   }
   // Pairing comfort: optional, private, asked of everyone for themselves.
   function requestsBlock() {
@@ -762,7 +792,7 @@
   function proposeLink(label) { return '<button type="button" class="linkbtn linkbtn--big" data-act="propose">' + label + " →</button>"; }
   function loading() { return '<div class="loading"><span></span></div>'; }
   function offline() { return '<p class="warn">We can’t reach our booking system right now. Please try again in a few minutes.</p>'; }
-  function addFriend() { P.friends.push({ id: uid(8), name: "", age: "", gender: "", genderText: "" }); }
+  function addFriend() { P.friends.push({ id: uid(8), name: "", email: "", age: "", gender: "", genderText: "" }); }
   function partyLink() {
     return location.origin + location.pathname + "?p=" + P.partyToken + (GAME.id !== "prague" ? "&game=" + GAME.id : "");
   }
@@ -921,6 +951,24 @@
       P.editing = true; render();
     },
     cancelEdit: function () { P.editing = false; render(); },
+    addPersonOpen: function (el) { P.addFor = el.dataset.v; P.add = { name: "", email: "", age: "", gender: "", genderText: "" }; render(); },
+    addPersonCancel: function () { P.addFor = null; render(); },
+    addPersonSave: function (el) {
+      var a = P.add;
+      if (!a.name.trim() || !a.age || !a.gender) { flash = "Please add their name, age and gender."; render(); return; }
+      if (a.email && !validEmail(a.email)) { flash = "Please check their email, or leave it blank."; render(); return; }
+      rpc("portal_add_person", { p_id: el.dataset.v, p: a }).then(function (res) {
+        if (!res || !res.ok) { flash = res && res.error === "full" ? "Sorry, this table is now full." : "Couldn’t add them. Please try again."; render(); return; }
+        P.addFor = null; loadPortal();
+      });
+    },
+    removePerson: function (el) {
+      if (!confirm("Remove this person from your booking? Their seat will be released.")) return;
+      rpc("portal_remove_person", { p_id: el.dataset.b, p_member: el.dataset.v }).then(function (res) {
+        if (!res || !res.ok) { flash = "Couldn’t remove them. Please try again."; render(); return; }
+        loadPortal();
+      });
+    },
     saveProfile: function () {
       if (!P.edit.name.trim()) { flash = "Please add your name."; render(); return; }
       if (P.edit.birthYear && yearError(P.edit.birthYear)) { flash = yearError(P.edit.birthYear); render(); return; }
@@ -999,6 +1047,7 @@
       }
       P.heldAt = Date.now();
       P.sessionId = sessionId; P.sessionDate = t ? t.date : ""; P.sessionTime = t ? t.time : ""; P.myCharacter = res.character || "";
+      P.partnerCharacter = res.partnerCharacter || "";
       persist();
       go(emailVerified() ? "review" : "verifyEmail");
     });
@@ -1094,6 +1143,7 @@
           flash = res.error === "not_found" ? "This seat has already been filled in, or the link has changed. Please check with the person who booked." : "Something went wrong. Please try again.";
           render(); return;
         }
+        P.alreadyBooked = res.warning === "already_booked";
         persist();
         go("fDone");
       });
