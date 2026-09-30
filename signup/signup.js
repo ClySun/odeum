@@ -238,7 +238,8 @@
     if (P.me && !asksCharGender()) P.charGender = charGenderFor(P.me.gender);
   }
 
-  // Fit for every character: the share of the most points that character could score on this quiz.
+  // Fit for every character: everyone starts at 50%, and answers that point to a character add to
+  // it, up to 100% for someone who picked every answer pointing that way.
   function allScores() {
     var sc = {}, max = {}, out = {};
     GAME.quiz.forEach(function (q) {
@@ -247,7 +248,7 @@
       q.options.forEach(function (x) { Object.keys(x.s).forEach(function (k) { qmax[k] = Math.max(qmax[k] || 0, x.s[k]); }); });
       Object.keys(qmax).forEach(function (k) { max[k] = (max[k] || 0) + qmax[k]; });
     });
-    GAME.characters.forEach(function (c) { out[c.id] = max[c.id] ? Math.round(100 * (sc[c.id] || 0) / max[c.id]) : 0; });
+    GAME.characters.forEach(function (c) { out[c.id] = max[c.id] ? Math.round(50 + 50 * (sc[c.id] || 0) / max[c.id]) : 50; });
     return out;
   }
   // Characters of the chosen gender, best fit first.
@@ -259,7 +260,7 @@
       .sort(function (a, b) { return b.pct - a.pct || a.i - b.i; });
   }
   function matchLabel(t) {
-    return t.charFit == null ? "" : t.charFit >= 75 ? "Strong match for you" : t.charFit >= 50 ? "Good match for you" : "";
+    return t.charFit == null ? "" : t.charFit >= 85 ? "Strong match for you" : t.charFit >= 70 ? "Good match for you" : "";
   }
 
   /* ---------------------------------------------------------
@@ -472,7 +473,7 @@
     },
 
     result: {
-      stage: 2,
+      stage: 2, next: function () { return P.kind === "friend" ? "Continue" : "Find my game"; },
       render: function () {
         var r = rankForMe();
         return head("Step 3 · Your matches", "Your character matches", "") +
@@ -848,7 +849,7 @@
       '<p class="error" role="alert">' + esc(flash) + "</p>" +
       '<div class="snav">' +
       (showBack ? '<button type="button" class="linkbtn" data-act="back">← Back</button>' : "<span></span>") +
-      (scr.noNext ? "" : '<button type="button" class="btn" data-act="next">' + (scr.next || "Continue") + "</button>") +
+      (scr.noNext ? "" : '<button type="button" class="btn" data-act="next">' + ((typeof scr.next === "function" ? scr.next() : scr.next) || "Continue") + "</button>") +
       "</div>";
 
     var restart = document.getElementById("restart");
