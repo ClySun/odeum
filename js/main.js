@@ -42,6 +42,24 @@
     reveals.forEach((el) => el.classList.add("is-in"));
   }
 
+  /* ---- Feature video: always muted, loads only when near the viewport ---- */
+  const video = document.querySelector("video.feature__img");
+  if (video) {
+    video.muted = true;
+    const load = () => {
+      if (!video.src) video.src = video.dataset.src;
+      if (!reduce) video.play().catch(() => {});
+    };
+    if ("IntersectionObserver" in window) {
+      const vio = new IntersectionObserver((entries) => {
+        entries.forEach((e) => (e.isIntersecting ? load() : video.pause()));
+      }, { rootMargin: "300px 0px" });
+      vio.observe(video);
+    } else {
+      load();
+    }
+  }
+
   /* ---- Subtle parallax on the full-bleed feature image ---- */
   const feature = document.querySelector(".feature__img");
   if (feature && !reduce) {
