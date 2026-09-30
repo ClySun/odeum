@@ -201,7 +201,7 @@
                  mode: P.mode, friends: P.friends.map(function (f) { return { id: f.id, name: f.name }; }),
                  me: { name: P.me.name, email: P.me.email } };
       }
-      if (P.kind === "friend" && P.step === "fDone") keep = { kind: "friend", step: "fDone", me: { name: P.me.name }, alreadyBooked: P.alreadyBooked, organizer: P.organizer };
+      if (P.kind === "friend" && P.step === "fDone") keep = { kind: "friend", step: "fDone", me: { name: P.me.name }, alreadyBooked: P.alreadyBooked, organizer: P.organizer, myCharacter: P.myCharacter };
       store(P.kind === "friend" ? partyKey() : DRAFT_KEY, keep);
     }
   }
@@ -265,6 +265,13 @@
       .filter(function (c) { return !P.charGender || c.gender === P.charGender; })
       .map(function (c, i) { return { id: c.id, name: c.name, pct: pct[c.id], i: i }; })
       .sort(function (a, b) { return b.pct - a.pct || a.i - b.i; });
+  }
+  // A friend's character: fixed already, else their best fit among those still open at the table.
+  function friendCharacter(ranked) {
+    var o = P.options; if (!o) return null;
+    if (o.assigned) return o.assigned;
+    var open = ranked.filter(function (m) { return (o.open || []).indexOf(m.id) >= 0; });
+    return open.length ? open[0].id : null;
   }
   function matchLabel(t) {
     return t.charFit == null ? "" : t.charFit >= 85 ? "Strong match for you" : t.charFit >= 70 ? "Good match for you" : "";
@@ -468,11 +475,13 @@
     charGender: {
       stage: 2,
       render: function () {
+        var can = (P.kind === "friend" && P.options && P.options.canPlay) || { female: true, male: true };
+        function opt(val, label) {
+          if (can[val] !== false) return choice("charGender", val, label, "", true);
+          return '<span class="choice is-done"><strong>' + label + "</strong><span>None left at your table</span></span>";
+        }
         return head("Step 3 · Character fit", "Would you like to portray a female or male character this time?", "") +
-          '<div class="choices">' +
-          choice("charGender", "female", "A female character", "", true) +
-          choice("charGender", "male", "A male character", "", true) +
-          "</div>";
+          '<div class="choices">' + opt("female", "A female character") + opt("male", "A male character") + "</div>";
       },
       valid: function () { return P.charGender ? "" : "Choose one to continue."; }
     },
@@ -491,12 +500,16 @@
     result: {
       stage: 2, next: function () { return P.kind === "friend" ? "Continue" : "Find my game"; },
       render: function () {
-        var r = rankForMe();
-        return head("Step 3 · Your matches", "Your character matches", "") +
+        var r = rankForMe(), o = P.kind === "friend" && P.options, mine = friendCharacter(r);
+        return head("Step 3 · Your matches", "Your character matches",
+          o && mine ? "At your table, you’ll play <strong>" + esc(charById(mine).name) + "</strong>." : "") +
           '<ol class="matches">' + r.map(function (m, i) {
-            var c = charById(m.id);
-            return '<li class="mrow' + (i === 0 ? " is-top" : "") + '"><img src="' + c.art + '" alt="" />' +
-              '<div class="mrow__body"><div class="mrow__head"><strong>' + c.name + '</strong><span class="mrow__pct">' + m.pct + "%</span></div>" +
+            var c = charById(m.id), taken = o && !o.assigned && (o.open || []).indexOf(m.id) < 0 && m.id !== mine;
+            var top = o ? m.id === mine : i === 0;
+            return '<li class="mrow' + (top ? " is-top" : "") + (taken ? " is-taken" : "") + '"><img src="' + c.art + '" alt="" />' +
+              '<div class="mrow__body"><div class="mrow__head"><strong>' + c.name +
+              (top && o ? ' <em class="mrow__tag">Your character</em>' : "") + (taken ? ' <em class="mrow__tag">Taken</em>' : "") +
+              '</strong><span class="mrow__pct">' + m.pct + "%</span></div>" +
               '<div class="mrow__bar"><span style="width:' + m.pct + '%"></span></div><p>' + esc(c.line) + "</p></div></li>";
           }).join("") + "</ol>";
       },
@@ -646,7 +659,9 @@
     fDone: {
       stage: 2, noNext: true, noBack: true,
       render: function () {
-        return head("All set", "Thank you, " + esc(first(P.me.name)) + ".", "We’ll assign your character before the game and send you everything you need.") +
+        var mc = P.myCharacter && charById(P.myCharacter);
+        return head("All set", "Thank you, " + esc(first(P.me.name)) + ".",
+          (mc ? "You’ll play <strong>" + esc(mc.name) + "</strong>. " : "") + "We’ll send you everything you need before the game.") +
           (P.alreadyBooked ? '<p class="warn">It looks like you already have a seat that night in another booking. We’ll sort it out with you and ' +
             (P.organizer ? esc(first(P.organizer)) : "the person who booked") + ".</p>" : "") +
           '<p class="note">See your booking any time in <a class="inline" href="./?portal">your Odeum portal</a>.</p>' +
@@ -799,7 +814,8 @@
      Flow
      --------------------------------------------------------- */
   function quizSteps() {
-    var f = ["quizIntro", "charGender"]; // intro, then which gender of character, then the questions
+    var fixed = P.kind === "friend" && P.options && P.options.assigned;
+    var f = fixed ? ["quizIntro"] : ["quizIntro", "charGender"]; // intro, then which gender of character, then the questions
     GAME.quiz.forEach(function (q, i) { f.push("q" + i); });
     if (!emailVerified()) f.push("verifyEmail"); // confirm the email before showing matches
     f.push("result");
@@ -993,6 +1009,7 @@
     pickFriend: function (el) {
       var m = P.party.filter(function (x) { return x.id === el.dataset.v; })[0];
       P.friendId = m.id; P.partnered = !!m.partnered;
+      loadFriendOptions();
       P.me.name = m.name || ""; P.me.age = m.age || "";
       P.me.gender = m.gender === "unsure" ? "" : (m.gender || ""); P.me.genderText = "";
       render(); setTimeout(next, 180);
@@ -1131,6 +1148,17 @@
     });
   }
 
+  function loadFriendOptions() {
+    if (!live() || !P.friendId) return Promise.resolve();
+    return rpc("friend_options", { p_token: partyToken, p_member: P.friendId }).then(function (o) {
+      if (!o || o.ok === false) return;
+      P.options = o;
+      var fixed = o.assigned && charById(o.assigned);
+      if (fixed) P.charGender = fixed.gender; // their character is set, so rank within its gender
+      persist(); render();
+    });
+  }
+
   function submitFriend() {
     var r = rankForMe();
     api("friend", { friendId: P.friendId, me: P.me, charGender: P.charGender, quiz: P.quiz, comfort: P.comfort, requests: P.requests,
@@ -1142,6 +1170,7 @@
           render(); return;
         }
         P.alreadyBooked = res.warning === "already_booked";
+        P.myCharacter = res.character || "";
         persist();
         go("fDone");
       });
@@ -1178,6 +1207,7 @@
       };
       P.organizer = d.organizer || ""; P.sessionLabel = d.sessionLabel || ""; P.party = d.members || [];
       render();
+      if (P.friendId && P.step !== "fDone") loadFriendOptions();
     }).catch(function () { message("That link didn’t work.", "Please try again in a moment."); });
   }
 

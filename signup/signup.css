@@ -242,3 +242,7 @@ a.inline:hover { color: var(--wine); border-color: var(--wine); }
 .addperson { margin-top: 1.25rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 12px; }
 .addperson .h3 { margin-top: 0; margin-bottom: 1rem; font-size: 1.15rem; }
 select option:disabled { color: var(--ink-faint); }
+
+.mrow__tag { font-family: var(--sans); font-style: normal; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--wine); margin-left: 0.5rem; vertical-align: middle; }
+.mrow.is-taken { opacity: 0.45; }
+.mrow.is-taken .mrow__tag { color: var(--ink-faint); }
