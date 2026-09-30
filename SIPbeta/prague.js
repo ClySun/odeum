@@ -36,13 +36,16 @@
     // To reopen a date, remove its `full: true`.
     { id: "2026-09-26", date: "Saturday 26 September 2026", time: "6:00–11:00 PM", place: "Upper West Side", full: true },
     { id: "2026-10-01", date: "Thursday 1 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side", full: true },
-    { id: "2026-10-17", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side", full: true }
+    { id: "2026-10-17", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side", full: true },
+    { id: "2026-11-20", date: "Friday 20 November 2026",    time: "6:00–11:00 PM", place: "Upper West Side" },
+    { id: "2026-11-21", date: "Saturday 21 November 2026",  time: "6:00–11:00 PM", place: "Upper West Side" }
   ];
 
   /* ---------------------------------------------------------
      STATE + ELEMENTS
      --------------------------------------------------------- */
   var statusMap = {}; // slotId -> "Pending" | "Confirmed" | ...
+  var expanded = {};  // session id -> true when a fully booked date has been opened
   var selected = null;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -135,21 +138,37 @@
       sessionsEl.appendChild(bar);
     }
 
-    SESSIONS.forEach(function (s) {
-      var card = document.createElement("div");
-      card.className = "session";
+    function openSeats(s) {
+      return s.full ? 0 : CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
+    }
+    // Chronological; fully booked dates collapse to a single line.
+    var ordered = loading ? SESSIONS.filter(function (s) { return !s.full; }) : SESSIONS;
 
-      var openCount = s.full ? 0 : CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
+    ordered.forEach(function (s) {
+      var card = document.createElement("div");
+      var openCount = openSeats(s);
+      var full = !loading && openCount === 0;
+      card.className = "session" + (full ? " session--full" + (expanded[s.id] ? " is-open" : "") : "");
+
       var count = loading
         ? "Checking…"
-        : (openCount === 0 ? "Fully booked" : openCount + " of " + CHARACTERS.length + " seats open");
+        : (full ? "Fully booked" : openCount + " of " + CHARACTERS.length + " seats open");
 
-      var head = document.createElement("div");
+      var head = document.createElement(full ? "button" : "div");
       head.className = "session__head";
+      if (full) {
+        head.type = "button";
+        head.setAttribute("aria-expanded", expanded[s.id] ? "true" : "false");
+        head.addEventListener("click", function () {
+          expanded[s.id] = !expanded[s.id];
+          card.classList.toggle("is-open", expanded[s.id]);
+          head.setAttribute("aria-expanded", expanded[s.id] ? "true" : "false");
+        });
+      }
       head.innerHTML =
         '<div><div class="session__date">' + s.date + "</div>" +
         '<div class="session__meta">' + s.time + " · " + s.place + "</div></div>" +
-        '<div class="session__count">' + count + "</div>";
+        '<div class="session__count">' + count + (full ? '<span class="session__chev" aria-hidden="true"></span>' : "") + "</div>";
       card.appendChild(head);
 
       var slots = document.createElement("div");
