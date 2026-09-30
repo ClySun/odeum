@@ -284,6 +284,26 @@ language sql stable set search_path = '' as $$
     'female', (select count(*) from free where gender = 'female') - (select count(*) from waiting where need = 'female'))
 $$;
 
+-- When a table is full, anyone still without a character (a friend who hasn't done their quiz)
+-- is given one of the characters left, matching the gender they need.
+create or replace function private.fill_leftovers(p_session uuid) returns void
+language plpgsql set search_path = '' as $$
+declare v_cap int; v_taken int; r record; v_char text;
+begin
+  select coalesce(s.seats, g.seats) into v_cap from private.sessions s join private.games g on g.id = s.game_id where s.id = p_session;
+  select count(*) into v_taken from private.table_seats(p_session, null);
+  if v_taken < v_cap then return; end if;
+  for r in select t.seat_id, t.need from private.table_seats(p_session, null) t
+           join private.seats x on x.id = t.seat_id join private.bookings b on b.id = x.booking_id
+           where t.assigned is null order by b.booked_at nulls last, x.id loop
+    select ch.id into v_char from private.characters ch join private.sessions s on s.game_id = ch.game_id
+    where s.id = p_session and (r.need = 'any' or ch.gender = r.need)
+      and ch.id not in (select t.assigned from private.table_seats(p_session, null) t where t.assigned is not null)
+    order by ch.sort limit 1;
+    if v_char is not null then update private.seats set assigned_character = v_char, updated_at = now() where id = r.seat_id; end if;
+  end loop;
+end $$;
+
 -- Checks one table for one booking. Returns the minimum requirements separately, so the same
 -- check serves recommendations (all must pass) and "all available dates" (age only warns).
 create or replace function private.evaluate(p_booking text, p_session uuid) returns jsonb
@@ -828,6 +848,7 @@ begin
                 limit 1) other
   where x.booking_id = p_id and x.role = 'Friend' and fp.id = x.person_id;
   update private.bookings set status = 'Booked', hold_expires_at = null, booked_at = now(), updated_at = now() where id = p_id;
+  perform private.fill_leftovers(v.session_id);   -- if this booking filled the table
   return jsonb_build_object('ok', true);
 end $$;
 
@@ -960,12 +981,7 @@ begin
                          greatest(coalesce(s.seats, (select g.seats from private.games g where g.id = b.game_id))
                                   - (select count(*) from private.table_seats(b.session_id, null)), 0) end,
           'partyToken', case when b.organizer_id = v_me then b.party_token end,
-          'topMatches', me.top_matches, 'requests', me.special_requests,
-          -- friends find out their character once the table is full; organizers see theirs at booking
-          'character', case when me.role = 'Organizer'
-                              or (select count(*) from private.table_seats(b.session_id, null))
-                                 >= coalesce(s.seats, (select g.seats from private.games g where g.id = b.game_id))
-                            then me.assigned_character end,
+          'topMatches', me.top_matches, 'requests', me.special_requests, 'character', me.assigned_character,
           'comfort', (select to_jsonb(c.comfort) from private.pairing_comfort c where c.seat_id = me.id),
           'party', (select jsonb_agg(jsonb_build_object('name', split_part(coalesce(p.name, ''), ' ', 1), 'done', x.quiz_status = 'Complete',
                                                         'you', x.id = me.id, 'organizer', x.role = 'Organizer', 'member', x.member_id) order by x.role desc, p.name)
@@ -1011,6 +1027,7 @@ begin
   v_member := 'p' || substr(md5(random()::text || clock_timestamp()::text), 1, 10);
   insert into private.seats (id, booking_id, member_id, person_id, role) values (p_id || '-' || v_member, p_id, v_member, v_person, 'Friend');
   update private.bookings set group_size = group_size + 1, updated_at = now() where id = p_id;
+  perform private.fill_leftovers(v.session_id);   -- if this seat filled the table
   return jsonb_build_object('ok', true);
 end $$;
 

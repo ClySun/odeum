@@ -468,7 +468,7 @@
     charGender: {
       stage: 2,
       render: function () {
-        var can = { female: true, male: true }, where = "your table";
+        var can = { female: true, male: true }, where = "this table";
         if (P.kind === "friend" && P.options && P.options.canPlay) can = P.options.canPlay;
         if (P.kind === "booking" && P.joining) {
           var jt = TABLES.list.filter(function (t) { return t.id === P.joinSession; })[0];
@@ -476,7 +476,7 @@
         }
         function opt(val, label) {
           if (can[val] !== false) return choice("charGender", val, label, "", true);
-          return '<span class="choice is-done"><strong>' + label + "</strong><span>None left at " + where + "</span></span>";
+          return '<span class="choice is-done"><strong>' + label + "</strong><span>All the " + val + " characters at " + where + " are taken.</span></span>";
         }
         return head("Step 3 · Character fit", "Would you like to portray a female or male character this time?", "") +
           '<div class="choices">' + opt("female", "A female character") + opt("male", "A male character") + "</div>";
@@ -653,8 +653,9 @@
     fDone: {
       stage: 2, noNext: true, noBack: true,
       render: function () {
+        var mc = P.myCharacter && charById(P.myCharacter);
         return head("All set", "Thank you, " + esc(first(P.me.name)) + ".",
-          "We’ll let you know your character once your table is full, and send you everything you need before the game.") +
+          (mc ? "You’ll play <strong>" + esc(mc.name) + "</strong>. " : "") + "We’ll send you everything you need before the game.") +
           (P.alreadyBooked ? '<p class="warn">It looks like you already have a seat that night in another booking. We’ll sort it out with you and ' +
             (P.organizer ? esc(first(P.organizer)) : "the person who booked") + ".</p>" : "") +
           '<p class="note">See your booking any time in <a class="inline" href="./?portal">your Odeum portal</a>.</p>' +
