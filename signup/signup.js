@@ -183,6 +183,11 @@
   // "Me and my plus-one" is a group of exactly two.
   function hasFriends() { return P.mode === "group" || P.mode === "plusone"; }
   function groupSize() { return hasFriends() ? 1 + P.friends.length : 1; }
+  // Someone with a real-life partner in the party isn't asked the pairing-comfort question.
+  function hasPartner() {
+    if (P.kind === "friend") return !!P.partnered;
+    return P.mode === "plusone" || (P.mode === "group" && (P.couples || []).some(function (c) { return c && c.indexOf("me") >= 0; }));
+  }
 
   // What this browser keeps so people can come back to an unfinished form.  Pairing-comfort answers
   // are never kept here (they go straight to the database), and once a booking or friend quiz is
@@ -217,7 +222,10 @@
     delete b.secret; delete b.code; delete b.codeSentTo; delete b.emailVerified; delete b.step; delete b.party; delete b.pick;
     if (!P.comfortTouched) delete b.comfort; // don't overwrite a saved answer with an empty one after a reload
     delete b.comfortTouched;
-    if (b.mode === "plusone") b.mode = "group";
+    if (b.mode === "plusone") {
+      b.mode = "group";
+      b.couples = P.friends[0] ? [["me", P.friends[0].id]] : []; // a plus-one is taken to be a real-life partner
+    }
     var r = rankForMe(), done = Object.keys(P.quiz || {}).length > 0;
     return {
       booking: b,
@@ -275,8 +283,10 @@
     return '<label class="field"><span>' + label + '</span><input type="' + (type || "text") + '" data-k="' + path +
       '" value="' + esc(getPath(P, path)) + '" ' + (extra || "") + " /></label>";
   }
+  // Marks a required question with a small asterisk.
+  function req(label) { return label + '<span class="req" aria-hidden="true">*</span>'; }
   function yearField(path) {
-    return '<label class="field"><span>What year were you born?</span><input type="text" class="field--year" data-k="' + path +
+    return '<label class="field"><span>' + req("What year were you born?") + '</span><input type="text" class="field--year" data-k="' + path +
       '" value="' + esc(getPath(P, path) || "") + '" inputmode="numeric" maxlength="4" autocomplete="bday-year" /></label>';
   }
   function yearError(y) {
@@ -288,7 +298,7 @@
   }
   function genderBlock(base, opts) {
     var g = getPath(P, base + ".gender"), friend = opts === FRIEND_GENDERS;
-    return '<div class="field"><span>Gender</span>' + chips(base + ".gender", opts, g) +
+    return '<div class="field"><span>' + req("Gender") + '</span>' + chips(base + ".gender", opts, g) +
       (g === "self" ? '<input type="text" class="field__sub" placeholder="' + (friend ? "Describe (optional)" : "") + '" data-k="' + base + '.genderText" value="' + esc(getPath(P, base + ".genderText")) + '" />' : "") +
       "</div>";
   }
@@ -350,10 +360,10 @@
       render: function () {
         var back = P.prefilled && P.me.name ? "Welcome back, " + esc(first(P.me.name)) + "." :
           'Been here before? <a class="inline" href="?portal">Sign in</a> to fill this in.';
-        return head("Step 1 · About you", "Let’s start with you.", back) +
-          field("Full name", "me.name", "text", 'autocomplete="name"') +
-          field("Email", "me.email", "email", 'autocomplete="email"') +
-          field("Phone", "me.phone", "tel", 'autocomplete="tel"') +
+        return head("Step 1 · About you", "Let’s start with the basics.", back) +
+          field(req("Full name"), "me.name", "text", 'autocomplete="name"') +
+          field(req("Email"), "me.email", "email", 'autocomplete="email"') +
+          field(req("Phone"), "me.phone", "tel", 'autocomplete="tel"') +
           yearField("me.birthYear") +
           genderBlock("me", GENDERS) + privacyNote();
       },
@@ -371,7 +381,7 @@
     who: {
       stage: 1,
       render: function () {
-        return head("Step 2 · Who’s coming", "Who’s coming with you?", "") +
+        return head("Step 2 · Who’s coming", req("Who’s coming with you?"), "") +
           '<div class="choices choices--three">' +
           choice("mode", "solo", "Just me", "") +
           choice("mode", "plusone", "Me and my plus-one", "") +
@@ -388,13 +398,13 @@
       render: function () {
         if (!P.friends.length) addFriend();
         var one = P.mode === "plusone";
-        return head("Step 2 · Who’s coming", one ? "Tell us about your plus-one." : "Tell us about your friends.", "Just the basics. Your best guess is fine for age.") +
+        return head("Step 2 · Who’s coming", one ? "Tell us about your plus-one." : "Tell us about your friends.", "") +
           P.friends.map(function (f, i) {
             var b = "friends." + i;
             return '<fieldset class="friend"><legend>' + (one ? "Your plus-one" : "Friend " + (i + 1)) + "</legend>" +
               (P.friends.length > 1 ? '<button type="button" class="friend__x" data-act="rmFriend" data-v="' + i + '" aria-label="Remove">Remove</button>' : "") +
-              field("Full name", b + ".name") +
-              '<div class="field"><span>Age</span>' + chips(b + ".age", AGES.map(function (a) { return [a, a]; }), f.age) + "</div>" +
+              field(req("Full name"), b + ".name") +
+              '<div class="field"><span>' + req("Age") + '</span>' + chips(b + ".age", AGES.map(function (a) { return [a, a]; }), f.age) + "</div>" +
               genderBlock(b, FRIEND_GENDERS) + "</fieldset>";
           }).join("") +
           (!one && P.friends.length < GAME.seats - 1 ? '<button type="button" class="btn btn--ghost" data-act="addFriend">+ Add another friend</button>' : "");
@@ -441,7 +451,7 @@
       render: function () {
         var list = TABLES.list.filter(function (t) { return t.started; });
         var picked = TABLES.list.filter(function (t) { return t.id === P.joinSession; })[0];
-        return head("Step 2 · Joining friends", "Which night did your friends book?", "Pick their date and we’ll seat you at the same table.") +
+        return head("Step 2 · Joining friends", req("Which night did your friends book?"), "Pick their date and we’ll seat you at the same table.") +
           (!live() ? offline() : TABLES.loaded ? (list.length ? dateTiles(list, P.joinSession, function (t) { return t.seatsLeft > 0 && t.seatsLeft + " left"; })
             : '<p class="warn">No tables have been started yet.</p>') : loading()) +
           (picked ? '<p class="picked">' + fmtDate(picked.date, true) + " · " + esc(picked.time) + "</p>" : "");
@@ -493,7 +503,7 @@
         var solo = groupSize() === 1;
         return head("Step 3 · Characters", solo ? "Do you want to experience a specific character?" : "Does anyone in your group want a specific character?", "") +
           '<div class="choices choices--small">' +
-          choice("prefsOn", false, solo ? "I’m open to recommendations based on my quiz results" : "We’re open to recommendations", "") +
+          choice("prefsOn", false, solo ? "I’m open to recommendations based on my quiz results" : "We’re open to recommendations based on quiz results", "") +
           choice("prefsOn", true, solo ? "Yes, I have a particular role in mind" : "Yes, we have particular roles in mind", "") +
           "</div>" +
           (P.prefsOn ? members().map(prefRow).join("") : "") +
@@ -549,8 +559,8 @@
     verifyEmail: {
       stage: 2, next: "Confirm",
       render: function () {
-        return head(P.kind === "friend" ? "Character fit" : "Step 3 · Character fit", "Confirm your email.",
-          "We sent a sign-in code to <strong>" + esc(P.me.email) + "</strong>. Enter it to see your character matches. " +
+        return head(P.kind === "friend" ? "Character fit" : "Step 3 · Character fit", "Confirm your email to save your quiz results.",
+          "We sent a sign-in code to <strong>" + esc(P.me.email) + "</strong>. " +
           "It can take a minute to arrive; check spam if you don’t see it.") +
           '<label class="field"><span>Code</span><input class="code" data-k="code" value="' + esc(P.code || "") +
           '" inputmode="numeric" autocomplete="one-time-code" maxlength="10" /></label>' +
@@ -615,7 +625,7 @@
       stage: 0,
       render: function () {
         return head("About you", "Confirm your details.", "Fix any typos in your name. This also sets up your Odeum profile for next time.") +
-          field("Full name", "me.name") + field("Email", "me.email", "email", 'autocomplete="email"') + field("Phone", "me.phone", "tel", 'autocomplete="tel"') +
+          field(req("Full name"), "me.name") + field(req("Email"), "me.email", "email", 'autocomplete="email"') + field(req("Phone"), "me.phone", "tel", 'autocomplete="tel"') +
           yearField("me.birthYear") +
           genderBlock("me", GENDERS) + privacyNote();
       },
@@ -742,6 +752,7 @@
   }
   // Pairing comfort: optional, private, asked of everyone for themselves.
   function requestsBlock() {
+    if (hasPartner()) return "";
     return '<div class="requests comfort"><h2 class="comfort__q">Which genders are you comfortable being paired with in an in-game romance?</h2>' +
       '<div class="chips chips--big">' + COMFORT.map(function (o) {
         return '<button type="button" class="chip' + (P.comfort.indexOf(o[0]) >= 0 ? " is-on" : "") + '" data-toggle="comfort" data-v="' + o[0] + '">' + o[1] + "</button>";
@@ -770,9 +781,10 @@
     if (P.kind === "message") return ["message"];
     if (P.kind === "portal") return ["pEmail", "pCode", "pHome"];
     syncCharGender();
-    if (P.kind === "friend") return ["fWelcome", "fAbout"].concat(quizSteps(), ["fRequests", "fDone"]);
+    if (P.kind === "friend") return ["fWelcome", "fAbout"].concat(quizSteps(), P.partnered ? [] : ["fRequests"], ["fDone"]);
     var f = ["about", "who"];
-    if (hasFriends()) f.push("friends", "connections");
+    if (hasFriends()) f.push("friends");
+    if (P.mode === "group") f.push("connections");
     if (P.joining) f.push("joinDate");
     f = f.concat(quizSteps(), ["prefs", "match"]);
     if (P.showCalendar) f.push("calendar");
@@ -822,7 +834,7 @@
     if (P.step === "verifyEmail") { checkCode(); return; }
     if (P.step === "pEmail") { portalSend(); return; }
     if (P.step === "pCode") { portalVerify(); return; }
-    if (P.step === "fRequests") { submitFriend(); return; }
+    if (P.kind === "friend" && to === "fDone") { submitFriend(); return; }
     if (P.step === "calendar") { holdTable(P.pick); return; }
     save();
     if (to) go(to);
@@ -934,7 +946,7 @@
     },
     pickFriend: function (el) {
       var m = P.party.filter(function (x) { return x.id === el.dataset.v; })[0];
-      P.friendId = m.id;
+      P.friendId = m.id; P.partnered = !!m.partnered;
       P.me.name = m.name || ""; P.me.age = m.age || "";
       P.me.gender = m.gender === "unsure" ? "" : (m.gender || ""); P.me.genderText = "";
       render(); setTimeout(next, 180);

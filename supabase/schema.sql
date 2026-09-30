@@ -766,7 +766,9 @@ language sql stable security definer set search_path = '' as $$
       'organizer', split_part(coalesce(op.name, ''), ' ', 1), 'game', b.game_id,
       'sessionLabel', private.night_label(b.session_id),
       'members', coalesce((select jsonb_agg(jsonb_build_object('id', x.member_id, 'name', p.name, 'age', p.age_range,
-                                                              'gender', p.gender, 'done', x.quiz_status = 'Complete') order by p.name)
+                                                              'gender', p.gender, 'done', x.quiz_status = 'Complete',
+                                                              -- in a real-life couple within this party (yes/no only)
+                                                              'partnered', exists (select 1 from jsonb_array_elements(b.real_life_couples) c where c ? p.name)) order by p.name)
                           from private.seats x left join private.people p on p.id = x.person_id
                           where x.booking_id = b.id and x.role = 'Friend' and x.quiz_status <> 'Removed'), '[]'))
     from private.bookings b left join private.people op on op.id = b.organizer_id

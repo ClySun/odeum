@@ -234,3 +234,6 @@ a.inline:hover { color: var(--wine); border-color: var(--wine); }
 .scard__you { margin-top: 0.6rem; font-size: 0.95rem; color: var(--ink-soft); }
 .scard__you strong { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; color: var(--ink); }
 .scard__you span { color: var(--ink-faint); font-size: 0.85rem; }
+
+.req { color: var(--wine); margin-left: 0.2em; }
+.title .req { font-size: 0.6em; vertical-align: super; }
