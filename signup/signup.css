@@ -100,7 +100,9 @@ select { appearance: none; cursor: pointer; background-image: linear-gradient(45
 .choice strong { font-family: var(--serif); font-weight: 400; font-size: 1.2rem; }
 .choice span { color: var(--ink-faint); font-size: 0.9rem; }
 .answer { padding: 1rem 1.25rem; font-size: 1.02rem; }
-.choice:hover, .answer:hover { border-color: var(--ink-soft); transform: translateY(-1px); }
+/* hover only on devices with a mouse, and only once it moves after a new screen appears,
+   so the next quiz question never shows an answer as if it were already picked */
+@media (hover: hover) { #app:not(.fresh) .choice:hover, #app:not(.fresh) .answer:hover { border-color: var(--ink-soft); transform: translateY(-1px); } }
 .choice.is-on, .answer.is-on { border-color: var(--wine); background: var(--card-on); box-shadow: inset 0 0 0 1px var(--wine); }
 .choices--list { grid-template-columns: 1fr 1fr; }
 .choice.is-done { cursor: default; opacity: 0.5; }
@@ -223,3 +225,12 @@ a.inline:hover { color: var(--wine); border-color: var(--wine); }
 .choices--three { grid-template-columns: repeat(3, 1fr); }
 .field input.field--year { max-width: 8ch; letter-spacing: 0.08em; }
 @media (max-width: 600px) { .choices--three { grid-template-columns: 1fr; } }
+
+/* smaller choice buttons (character preferences) and a prominent comfort question */
+.choices--small .choice { padding: 0.8rem 1rem; }
+.choices--small .choice strong { font-family: var(--sans); font-weight: 400; font-size: 0.95rem; }
+.comfort { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--line); }
+.comfort__q { font-family: var(--serif); font-weight: 300; font-size: clamp(1.5rem, 4vw, 1.9rem); line-height: 1.2; margin-bottom: 1.25rem; }
+.scard__you { margin-top: 0.6rem; font-size: 0.95rem; color: var(--ink-soft); }
+.scard__you strong { font-family: var(--serif); font-weight: 400; font-size: 1.15rem; color: var(--ink); }
+.scard__you span { color: var(--ink-faint); font-size: 0.85rem; }

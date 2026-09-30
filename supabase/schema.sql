@@ -680,7 +680,20 @@ begin
           where x.game_id = v.game_id and x.status = 'Open' and x.night > current_date) t), '[]'));
 end $$;
 
--- Holds the seats for 30 minutes while the organizer verifies their email and confirms.
+-- Gives the organizer their character at this table: the one they required, else their best fit
+-- among the characters still open there. Other players' characters are assigned by the team.
+create or replace function private.assign_organizer(p_id text, e jsonb) returns text
+language plpgsql set search_path = '' as $$
+declare v_req text; v_char text;
+begin
+  select r ->> 'choice' into v_req from private.bookings b, jsonb_array_elements(b.character_prefs) r
+  where b.id = p_id and r ->> 'member' = 'me' and r ->> 'strength' = 'required' and r ->> 'choice' not in ('anyF', 'anyM', 'none') limit 1;
+  v_char := coalesce(v_req, e ->> 'bestCharacter');
+  update private.seats set assigned_character = v_char, updated_at = now() where id = p_id || '-me';
+  return v_char;
+end $$;
+
+-- Holds the seats for 30 minutes while the organizer confirms, and reserves the organizer's character.
 create or replace function public.hold_table(p_id text, p_secret text, p_session uuid) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 declare v private.bookings; e jsonb;
@@ -696,7 +709,7 @@ begin
   if not private.bookable(e) then return jsonb_build_object('ok', false, 'error', 'full', 'reason', private.reason(e)); end if;
   update private.bookings set session_id = p_session, status = 'Held', hold_expires_at = now() + interval '30 minutes',
     last_activity_at = now(), updated_at = now() where id = p_id;
-  return jsonb_build_object('ok', true, 'holdExpiresAt', now() + interval '30 minutes');
+  return jsonb_build_object('ok', true, 'holdExpiresAt', now() + interval '30 minutes', 'character', private.assign_organizer(p_id, e));
 end $$;
 
 -- After the organizer verifies their email (Supabase Auth code), attach the booking to their account.
@@ -735,6 +748,7 @@ begin
     end if;
     e := private.evaluate(p_id, v.session_id);
     if not private.bookable(e) then return jsonb_build_object('ok', false, 'error', 'full'); end if;
+    perform private.assign_organizer(p_id, e);   -- the hold lapsed, so their character may have moved
   end if;
   update private.seats x set assigned_character = r ->> 'choice'
   from jsonb_array_elements(v.character_prefs) r

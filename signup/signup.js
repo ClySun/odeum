@@ -301,16 +301,18 @@
 
   // A recommended table, as returned by the database.
   function sessionCard(t, joining) {
-    var best = t.bestCharacter, label = joining ? "" : matchLabel(t);
+    var best = t.bestCharacter, label = joining ? "" : matchLabel(t), me = charById(best);
     var open = (t.openCharacters || []).map(charById).filter(Boolean);
     return '<article class="scard">' +
       '<div class="scard__top"><div><h3 class="scard__date">' + fmtDate(t.date) + '</h3>' +
       '<p class="scard__meta">' + esc(t.time) + " · " + (t.started ? t.seatsLeft + " seat" + (t.seatsLeft === 1 ? "" : "s") + " left" : "New table") +
       (label ? ' · <span class="scard__match">' + label + "</span>" : "") +
-      (!joining && t.started && t.ageGap != null && t.ageGap <= 5 ? " · Players around your age" : "") + "</p></div>" +
+      (!joining && t.started && t.ageGap != null && t.ageGap <= 5 ? " · Players around your age" : "") + "</p>" +
+      (me ? '<p class="scard__you">You’d play <strong>' + esc(me.name) + "</strong>" + (t.charFit != null ? ' <span>· ' + Math.round(t.charFit) + "% match</span>" : "") + "</p>" : "") +
+      "</div>" +
       '<button type="button" class="btn" data-act="pickTable" data-v="' + esc(t.sessionId) + '"' + (busy ? " disabled" : "") + '>Book this date</button></div>' +
       '<details class="scard__more"><summary>View available characters</summary><div class="thumbs">' +
-      open.map(function (c) { return charThumb(c, c.id === best ? "Your best match" : ""); }).join("") +
+      open.map(function (c) { return charThumb(c, c.id === best ? "Your character" : ""); }).join("") +
       "</div></details></article>";
   }
 
@@ -368,7 +370,7 @@
     who: {
       stage: 1,
       render: function () {
-        return head("Step 2 · Who’s coming", "Who’s coming with you?", "You’ll book for everyone in one go. Your friends fill in their own character quiz afterwards.") +
+        return head("Step 2 · Who’s coming", "Who’s coming with you?", "") +
           '<div class="choices choices--three">' +
           choice("mode", "solo", "Just me", "") +
           choice("mode", "plusone", "Me and my plus-one", "") +
@@ -462,7 +464,7 @@
       stage: 2,
       next: "Begin",
       render: function () {
-        return '<div class="pause">' + head("Step 3 · Character fit", "Now, a few questions about you.",
+        return '<div class="pause">' + head("Step 3 · Character fit", "Let’s find a character for you.",
           "Every character in <em>" + esc(GAME.title) + "</em> has a distinct personality and perspective. " +
           "The following questions help us understand which characters may be the best fit for you.") + "</div>";
       },
@@ -473,7 +475,7 @@
       stage: 2,
       render: function () {
         var r = rankForMe();
-        return head("Step 3 · Your matches", "Your character matches", "Based on your answers. We’ll confirm your character when we seat your table.") +
+        return head("Step 3 · Your matches", "Your character matches", "") +
           '<ol class="matches">' + r.map(function (m, i) {
             var c = charById(m.id);
             return '<li class="mrow' + (i === 0 ? " is-top" : "") + '"><img src="' + c.art + '" alt="" />' +
@@ -489,8 +491,8 @@
       render: function () {
         var solo = groupSize() === 1;
         return head("Step 3 · Characters", solo ? "Do you want to experience a specific character?" : "Does anyone in your group want a specific character?", "") +
-          '<div class="choices">' +
-          choice("prefsOn", false, "We’re open to recommendations", "") +
+          '<div class="choices choices--small">' +
+          choice("prefsOn", false, solo ? "I’m open to recommendations based on my quiz results" : "We’re open to recommendations", "") +
           choice("prefsOn", true, solo ? "Yes, I have a particular role in mind" : "Yes, we have particular roles in mind", "") +
           "</div>" +
           (P.prefsOn ? members().map(prefRow).join("") : "") +
@@ -513,7 +515,8 @@
             proposeLink("See all available dates");
         }
         return head("Step 4 · Your game", top.length ? "Your best tables" : "No table fits yet",
-          top.length ? "Matched on seats for your group" + (size > 1 ? " of " + size : "") + ", players of similar ages, and your character fit."
+          top.length ? (size > 1 ? "Matched on seats for your group, players of similar ages, your preferences and your character fit."
+                                 : "Matched on open seats, players of similar ages, your preferences and your character fit.")
                      : "See every available night below.") + note +
           top.map(function (t) { return sessionCard(t); }).join("") + proposeLink("See all available dates");
       },
@@ -543,10 +546,11 @@
     },
 
     verifyEmail: {
-      stage: 4, next: "Confirm",
+      stage: 2, next: "Confirm",
       render: function () {
-        return head(P.kind === "friend" ? "Last step" : "Before you book", "Confirm your email.",
-          "We sent a sign-in code to <strong>" + esc(P.me.email) + "</strong>. It can take a minute to arrive; check spam if you don’t see it.") +
+        return head(P.kind === "friend" ? "Character fit" : "Step 3 · Character fit", "Confirm your email.",
+          "We sent a sign-in code to <strong>" + esc(P.me.email) + "</strong>. Enter it to see your character matches. " +
+          "It can take a minute to arrive; check spam if you don’t see it.") +
           '<label class="field"><span>Code</span><input class="code" data-k="code" value="' + esc(P.code || "") +
           '" inputmode="numeric" autocomplete="one-time-code" maxlength="10" /></label>' +
           '<p class="note"><button type="button" class="linkbtn" data-act="resend">Send a new code</button> &nbsp;·&nbsp; ' +
@@ -564,6 +568,7 @@
           "<dt>Game</dt><dd>" + GAME.title + "</dd>" +
           "<dt>Date</dt><dd>" + fmtDate(P.sessionDate, true) + " · " + esc(P.sessionTime || GAME.time) + "</dd>" +
           "<dt>Where</dt><dd>" + esc(GAME.area || GAME.place) + " (address sent before the game)</dd>" +
+          (P.myCharacter && charById(P.myCharacter) ? "<dt>You play</dt><dd>" + esc(charById(P.myCharacter).name) + "</dd>" : "") +
           "<dt>Players</dt><dd>" + members().map(function (m) { return esc(m.name); }).join(", ") + "</dd>" +
           "<dt>Seats</dt><dd>" + size + " · free during the testing period</dd>" +
           "</dl>" +
@@ -698,8 +703,7 @@
       "</article>";
   }
   function privacyNote() {
-    return '<p class="private"><span aria-hidden="true">🔒</span> We use your details only to run your game. They’re never shared or sold. ' +
-      'To see or delete them, sign in to your portal or email <a class="inline" href="mailto:sunpuxin@gmail.com">sunpuxin@gmail.com</a>.</p>';
+    return '<p class="private"><span aria-hidden="true">🔒</span> We use your details only to match you to the game table that’s best for you.</p>';
   }
 
   // Quiz questions are generated screens q0..qN
@@ -737,11 +741,11 @@
   }
   // Pairing comfort: optional, private, asked of everyone for themselves.
   function requestsBlock() {
-    return '<div class="requests"><div class="field"><span>Which genders are you comfortable being paired with in an in-game romance?</span>' +
-      '<div class="chips">' + COMFORT.map(function (o) {
+    return '<div class="requests comfort"><h2 class="comfort__q">Which genders are you comfortable being paired with in an in-game romance?</h2>' +
+      '<div class="chips chips--big">' + COMFORT.map(function (o) {
         return '<button type="button" class="chip' + (P.comfort.indexOf(o[0]) >= 0 ? " is-on" : "") + '" data-toggle="comfort" data-v="' + o[0] + '">' + o[1] + "</button>";
       }).join("") + "</div>" +
-      '<p class="private"><span aria-hidden="true">🔒</span> Optional, choose all that apply. Your answer here will only be used for matching and will never be displayed or shared with other players.</p></div></div>';
+      '<p class="private"><span aria-hidden="true">🔒</span> Optional, choose all that apply. Your answer here will only be used for matching and will never be displayed or shared with other players.</p></div>';
   }
   function proposeLink(label) { return '<button type="button" class="linkbtn linkbtn--big" data-act="propose">' + label + " →</button>"; }
   function loading() { return '<div class="loading"><span></span></div>'; }
@@ -757,6 +761,7 @@
   function quizSteps() {
     var f = asksCharGender() ? ["charGender", "quizIntro"] : ["quizIntro"];
     GAME.quiz.forEach(function (q, i) { f.push("q" + i); });
+    if (!emailVerified()) f.push("verifyEmail"); // confirm the email before showing matches
     f.push("result");
     return f;
   }
@@ -764,18 +769,19 @@
     if (P.kind === "message") return ["message"];
     if (P.kind === "portal") return ["pEmail", "pCode", "pHome"];
     syncCharGender();
-    if (P.kind === "friend") return ["fWelcome", "fAbout"].concat(quizSteps(), ["fRequests"], emailVerified() ? [] : ["verifyEmail"], ["fDone"]);
+    if (P.kind === "friend") return ["fWelcome", "fAbout"].concat(quizSteps(), ["fRequests", "fDone"]);
     var f = ["about", "who"];
     if (hasFriends()) f.push("friends", "connections");
     if (P.joining) f.push("joinDate");
     f = f.concat(quizSteps(), ["prefs", "match"]);
     if (P.showCalendar) f.push("calendar");
-    if (!emailVerified()) f.push("verifyEmail");
     f.push("review");
     if (P.status === "Booked") f.push("done");
     return f;
   }
 
+  // After the code: on to the matches, or straight to review if a table is already held.
+  function afterVerify() { return P.sessionId && P.status !== "Booked" && P.step !== "result" && P.heldAt ? "review" : "result"; }
   function emailVerified() { return !!P.emailVerified && P.emailVerified === String(P.me.email).trim().toLowerCase(); }
 
   function sendCode() {
@@ -789,10 +795,10 @@
   // Already signed in (e.g. booked before on this device) with this same email? Skip the code.
   function verifyOrSkip() {
     signedInEmail().then(function (e) {
-      if (live() && e && e === typedEmail() && P.kind === "friend") { P.emailVerified = e; submitFriend(); return; }
+      if (live() && e && e === typedEmail() && P.kind === "friend") { P.emailVerified = e; go("result"); return; }
       if (live() && e && e === typedEmail()) {
         rpc("claim_booking", draftArgs()).then(function (res) {
-          if (res && res.ok) { P.emailVerified = e; go("review"); } else if (P.codeSentTo !== typedEmail()) sendCode();
+          if (res && res.ok) { P.emailVerified = e; go(afterVerify()); } else if (P.codeSentTo !== typedEmail()) sendCode();
         });
       } else if (P.codeSentTo !== typedEmail()) sendCode();
     });
@@ -815,7 +821,7 @@
     if (P.step === "verifyEmail") { checkCode(); return; }
     if (P.step === "pEmail") { portalSend(); return; }
     if (P.step === "pCode") { portalVerify(); return; }
-    if (P.step === "fRequests") { if (emailVerified()) submitFriend(); else go("verifyEmail"); return; }
+    if (P.step === "fRequests") { submitFriend(); return; }
     if (P.step === "calendar") { holdTable(P.pick); return; }
     save();
     if (to) go(to);
@@ -830,9 +836,10 @@
     if (f.indexOf(P.step) < 0) P.step = f[0];
     var scr = SCREENS[P.step];
     var stages = P.kind === "friend" ? FRIEND_STAGES : STAGES;
-    var stage = P.kind === "friend" ? (P.step === "verifyEmail" ? 2 : scr.quiz || P.step === "charGender" || P.step === "quizIntro" || P.step === "result" ? 1 : scr.stage) : scr.stage;
+    var stage = P.kind === "friend" ? (P.step === "verifyEmail" ? 1 : scr.quiz || P.step === "charGender" || P.step === "quizIntro" || P.step === "result" ? 1 : scr.stage) : scr.stage;
     var showBack = !scr.noBack && f.indexOf(P.step) > 0;
 
+    app.classList.add("fresh");
     app.innerHTML =
       (P.kind === "message" || P.kind === "portal" ? "" : '<ol class="progress">' + stages.map(function (s, i) {
         return '<li class="' + (i < stage ? "is-done" : i === stage ? "is-on" : "") + '"><span>' + s + "</span></li>";
@@ -950,6 +957,7 @@
     }
     if (ACTS[el.dataset.act]) ACTS[el.dataset.act](el);
   });
+  app.addEventListener("mousemove", function () { app.classList.remove("fresh"); });
   app.addEventListener("input", function (e) {
     var k = e.target.dataset.k;
     if (!k) return;
@@ -976,7 +984,8 @@
         if (P.step === "calendar") loadBrowse(); else loadRecs();
         render(); return;
       }
-      P.sessionId = sessionId; P.sessionDate = t ? t.date : ""; P.sessionTime = t ? t.time : "";
+      P.heldAt = Date.now();
+      P.sessionId = sessionId; P.sessionDate = t ? t.date : ""; P.sessionTime = t ? t.time : ""; P.myCharacter = res.character || "";
       persist();
       go(emailVerified() ? "review" : "verifyEmail");
     });
@@ -1007,7 +1016,7 @@
         busy = false;
         if (!res.ok) { flash = "That code didn’t match or has expired. Check it, or tap “Send a new code”."; render(); return; }
         P.emailVerified = typedEmail();
-        submitFriend();
+        go("result");
       });
       return;
     }
@@ -1019,7 +1028,7 @@
       }
       if (res.error === "email_mismatch") { flash = "Please use the email you entered at the start."; render(); return; }
       P.emailVerified = String(P.me.email).trim().toLowerCase();
-      go("review");
+      go(afterVerify());
     });
   }
 

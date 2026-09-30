@@ -38,7 +38,7 @@ window.ODEUM = {
       // PLACEHOLDER quiz — each option scores characters (2 = strong fit, 1 = some fit).
       quiz: [
         {
-          id: "party", q: "At a party, you’re most likely to be…",
+          id: "party", q: "At a house party, you’re…",
           options: [
             { t: "Telling a story to a group", s: { vaclav: 2, petra: 1 } },
             { t: "Deep in a one-on-one conversation", s: { eva: 2, tomas: 1 } },
