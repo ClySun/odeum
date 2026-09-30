@@ -268,6 +268,22 @@ language sql stable set search_path = '' as $$
     and (b.status = 'Booked' or (b.status = 'Held' and b.hold_expires_at > now()))
 $$;
 
+-- How many more players of each gender a table can take: free characters of that gender minus the
+-- seats already waiting for one (e.g. a friend who hasn't done their quiz yet).
+create or replace function private.gender_room(p_session uuid) returns jsonb
+language sql stable set search_path = '' as $$
+  with free as (
+    select ch.gender from private.characters ch join private.sessions s on s.game_id = ch.game_id
+    where s.id = p_session
+      and ch.id not in (select t.assigned from private.table_seats(p_session, null) t where t.assigned is not null)
+  ), waiting as (
+    select t.need from private.table_seats(p_session, null) t where t.assigned is null
+  )
+  select jsonb_build_object(
+    'male',   (select count(*) from free where gender = 'male')   - (select count(*) from waiting where need = 'male'),
+    'female', (select count(*) from free where gender = 'female') - (select count(*) from waiting where need = 'female'))
+$$;
+
 -- Checks one table for one booking. Returns the minimum requirements separately, so the same
 -- check serves recommendations (all must pass) and "all available dates" (age only warns).
 create or replace function private.evaluate(p_booking text, p_session uuid) returns jsonb
@@ -524,7 +540,8 @@ language sql stable security definer set search_path = '' as $$
              'time', coalesce(nullif(s.time_label, ''), g.time_label), 'area', coalesce(nullif(s.area, ''), g.area),
              'seats', coalesce(s.seats, g.seats),
              'seatsLeft', greatest(coalesce(s.seats, g.seats) - (select count(*) from private.table_seats(s.id, null)), 0),
-             'started', exists (select 1 from private.table_seats(s.id, null))) as x
+             'started', exists (select 1 from private.table_seats(s.id, null)),
+             'room', private.gender_room(s.id)) as x
     from private.sessions s join private.games g on g.id = s.game_id
     where s.game_id = p_game and s.status = 'Open' and s.night > current_date
   ) t
@@ -943,7 +960,12 @@ begin
                          greatest(coalesce(s.seats, (select g.seats from private.games g where g.id = b.game_id))
                                   - (select count(*) from private.table_seats(b.session_id, null)), 0) end,
           'partyToken', case when b.organizer_id = v_me then b.party_token end,
-          'topMatches', me.top_matches, 'requests', me.special_requests, 'character', me.assigned_character,
+          'topMatches', me.top_matches, 'requests', me.special_requests,
+          -- friends find out their character once the table is full; organizers see theirs at booking
+          'character', case when me.role = 'Organizer'
+                              or (select count(*) from private.table_seats(b.session_id, null))
+                                 >= coalesce(s.seats, (select g.seats from private.games g where g.id = b.game_id))
+                            then me.assigned_character end,
           'comfort', (select to_jsonb(c.comfort) from private.pairing_comfort c where c.seat_id = me.id),
           'party', (select jsonb_agg(jsonb_build_object('name', split_part(coalesce(p.name, ''), ' ', 1), 'done', x.quiz_status = 'Complete',
                                                         'you', x.id = me.id, 'organizer', x.role = 'Organizer', 'member', x.member_id) order by x.role desc, p.name)

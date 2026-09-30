@@ -266,13 +266,6 @@
       .map(function (c, i) { return { id: c.id, name: c.name, pct: pct[c.id], i: i }; })
       .sort(function (a, b) { return b.pct - a.pct || a.i - b.i; });
   }
-  // A friend's character: fixed already, else their best fit among those still open at the table.
-  function friendCharacter(ranked) {
-    var o = P.options; if (!o) return null;
-    if (o.assigned) return o.assigned;
-    var open = ranked.filter(function (m) { return (o.open || []).indexOf(m.id) >= 0; });
-    return open.length ? open[0].id : null;
-  }
   function matchLabel(t) {
     return t.charFit == null ? "" : t.charFit >= 85 ? "Strong match for you" : t.charFit >= 70 ? "Good match for you" : "";
   }
@@ -475,10 +468,15 @@
     charGender: {
       stage: 2,
       render: function () {
-        var can = (P.kind === "friend" && P.options && P.options.canPlay) || { female: true, male: true };
+        var can = { female: true, male: true }, where = "your table";
+        if (P.kind === "friend" && P.options && P.options.canPlay) can = P.options.canPlay;
+        if (P.kind === "booking" && P.joining) {
+          var jt = TABLES.list.filter(function (t) { return t.id === P.joinSession; })[0];
+          if (jt && jt.room) { can = { female: jt.room.female > 0, male: jt.room.male > 0 }; where = "your friends’ table"; }
+        }
         function opt(val, label) {
           if (can[val] !== false) return choice("charGender", val, label, "", true);
-          return '<span class="choice is-done"><strong>' + label + "</strong><span>None left at your table</span></span>";
+          return '<span class="choice is-done"><strong>' + label + "</strong><span>None left at " + where + "</span></span>";
         }
         return head("Step 3 · Character fit", "Would you like to portray a female or male character this time?", "") +
           '<div class="choices">' + opt("female", "A female character") + opt("male", "A male character") + "</div>";
@@ -500,16 +498,12 @@
     result: {
       stage: 2, next: function () { return P.kind === "friend" ? "Continue" : "Find my game"; },
       render: function () {
-        var r = rankForMe(), o = P.kind === "friend" && P.options, mine = friendCharacter(r);
-        return head("Step 3 · Your matches", "Your character matches",
-          o && mine ? "At your table, you’ll play <strong>" + esc(charById(mine).name) + "</strong>." : "") +
+        var r = rankForMe();
+        return head("Step 3 · Your matches", "Your character matches", "") +
           '<ol class="matches">' + r.map(function (m, i) {
-            var c = charById(m.id), taken = o && !o.assigned && (o.open || []).indexOf(m.id) < 0 && m.id !== mine;
-            var top = o ? m.id === mine : i === 0;
-            return '<li class="mrow' + (top ? " is-top" : "") + (taken ? " is-taken" : "") + '"><img src="' + c.art + '" alt="" />' +
-              '<div class="mrow__body"><div class="mrow__head"><strong>' + c.name +
-              (top && o ? ' <em class="mrow__tag">Your character</em>' : "") + (taken ? ' <em class="mrow__tag">Taken</em>' : "") +
-              '</strong><span class="mrow__pct">' + m.pct + "%</span></div>" +
+            var c = charById(m.id);
+            return '<li class="mrow' + (i === 0 ? " is-top" : "") + '"><img src="' + c.art + '" alt="" />' +
+              '<div class="mrow__body"><div class="mrow__head"><strong>' + c.name + '</strong><span class="mrow__pct">' + m.pct + "%</span></div>" +
               '<div class="mrow__bar"><span style="width:' + m.pct + '%"></span></div><p>' + esc(c.line) + "</p></div></li>";
           }).join("") + "</ol>";
       },
@@ -659,9 +653,8 @@
     fDone: {
       stage: 2, noNext: true, noBack: true,
       render: function () {
-        var mc = P.myCharacter && charById(P.myCharacter);
         return head("All set", "Thank you, " + esc(first(P.me.name)) + ".",
-          (mc ? "You’ll play <strong>" + esc(mc.name) + "</strong>. " : "") + "We’ll send you everything you need before the game.") +
+          "We’ll let you know your character once your table is full, and send you everything you need before the game.") +
           (P.alreadyBooked ? '<p class="warn">It looks like you already have a seat that night in another booking. We’ll sort it out with you and ' +
             (P.organizer ? esc(first(P.organizer)) : "the person who booked") + ".</p>" : "") +
           '<p class="note">See your booking any time in <a class="inline" href="./?portal">your Odeum portal</a>.</p>' +
@@ -783,7 +776,7 @@
     }).map(function (k) { return P.prefs[k] && P.prefs[k].choice; });
     var cg = m.isMe ? P.charGender : charGenderFor(m.gender);
     var chars = GAME.characters.filter(function (c) { return !cg || c.gender === cg; });
-    var opts = [["none", "Open to any character"]];
+    var opts = [["none", ""]];
     if (!cg) opts.push(["anyF", "Any female character"], ["anyM", "Any male character"]);
     opts = opts.concat(chars.map(function (c) { return [c.id, c.name]; }));
     return '<div class="pref"><strong>' + esc(m.name) + (m.isMe ? " (you)" : "") + "</strong>" +
@@ -796,7 +789,7 @@
   // Pairing comfort: optional, private, asked of everyone for themselves.
   function requestsBlock() {
     if (hasPartner()) return "";
-    return '<div class="requests comfort"><h2 class="comfort__q">Which genders are you comfortable being paired with in an in-game romance?</h2>' +
+    return '<div class="requests comfort"><h2 class="comfort__q">For an in-game romantic storyline, which genders would you feel comfortable being paired with?</h2>' +
       '<div class="chips chips--big">' + COMFORT.map(function (o) {
         return '<button type="button" class="chip' + (P.comfort.indexOf(o[0]) >= 0 ? " is-on" : "") + '" data-toggle="comfort" data-v="' + o[0] + '">' + o[1] + "</button>";
       }).join("") + "</div>" +
@@ -814,8 +807,7 @@
      Flow
      --------------------------------------------------------- */
   function quizSteps() {
-    var fixed = P.kind === "friend" && P.options && P.options.assigned;
-    var f = fixed ? ["quizIntro"] : ["quizIntro", "charGender"]; // intro, then which gender of character, then the questions
+    var f = ["quizIntro", "charGender"]; // intro, then which gender of character, then the questions
     GAME.quiz.forEach(function (q, i) { f.push("q" + i); });
     if (!emailVerified()) f.push("verifyEmail"); // confirm the email before showing matches
     f.push("result");
@@ -1153,8 +1145,6 @@
     return rpc("friend_options", { p_token: partyToken, p_member: P.friendId }).then(function (o) {
       if (!o || o.ok === false) return;
       P.options = o;
-      var fixed = o.assigned && charById(o.assigned);
-      if (fixed) P.charGender = fixed.gender; // their character is set, so rank within its gender
       persist(); render();
     });
   }
