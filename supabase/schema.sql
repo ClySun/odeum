@@ -212,9 +212,13 @@ language sql immutable set search_path = '' as $$ select encode(sha256(convert_t
 create or replace function private.clip(t text, n int default 200) returns text
 language sql immutable set search_path = '' as $$ select left(nullif(btrim(t), ''), n) $$;
 
+-- Midpoint of an age range. Compares digits only, so it works whatever dash character the range
+-- was stored with ("26–35", "26-35", …).
 create or replace function private.age_mid(r text) returns numeric
 language sql immutable set search_path = '' as $$
-  select case r when '18–21' then 19.5 when '22–25' then 23.5 when '26–35' then 30.5 when '36–40' then 38 when '41+' then 45 end
+  select case regexp_replace(coalesce(r, ''), '[^0-9+]', '', 'g')
+              when '1821' then 19.5 when '2225' then 23.5 when '2635' then 30.5
+              when '3640' then 38 when '41+' then 45 end
 $$;
 
 -- Birth year as typed ({"birthYear": "1995"}), or null.
@@ -226,9 +230,11 @@ $$;
 -- The age range used for matching, from a birth year.
 create or replace function private.age_range_from_year(y int) returns text
 language sql stable set search_path = '' as $$
+  -- the en dash is built with chr(8211) so it survives copy and paste into the SQL editor
   select case when y is null then null
-              else (select case when a < 18 then null when a <= 21 then '18–21' when a <= 25 then '22–25'
-                                when a <= 35 then '26–35' when a <= 40 then '36–40' else '41+' end
+              else (select case when a < 18 then null when a <= 21 then '18' || chr(8211) || '21'
+                                when a <= 25 then '22' || chr(8211) || '25' when a <= 35 then '26' || chr(8211) || '35'
+                                when a <= 40 then '36' || chr(8211) || '40' else '41+' end
                     from (select extract(year from current_date)::int - y as a) t) end
 $$;
 
