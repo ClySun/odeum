@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="What players said after an evening at Odeum, a private theatre experience in New York City." />
+  <meta name="theme-color" content="#f1ece2" />
+  <title>What Our Players Say · Odeum</title>
+
+  <link rel="icon" href="../favicon.svg?v=2" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../css/styles.css?v=11" />
+  <link rel="stylesheet" href="testimonials.css?v=3" />
+</head>
+<body>
+  <!-- NAV -->
+  <header class="nav" id="nav">
+    <nav class="nav__side nav__side--left" aria-label="Primary">
+      <button class="nav__menu" id="menuBtn" aria-expanded="false" aria-controls="overlay">
+        <span></span><span></span>
+      </button>
+      <a href="../#experience" class="nav__link">The Experience</a>
+      <a href="../#games" class="nav__link">The Games</a>
+      <a href="./" class="nav__link" aria-current="page">Testimonials</a>
+    </nav>
+
+    <a href="../" class="nav__brand" aria-label="Odeum home">ODEUM</a>
+
+    <div class="nav__side nav__side--right">
+    </div>
+  </header>
+
+  <!-- FULLSCREEN OVERLAY MENU -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <nav class="overlay__nav" aria-label="Overlay">
+      <a href="../#experience">The Experience</a>
+      <a href="../#games">The Games</a>
+      <a href="./">Testimonials</a>
+    </nav>
+    <p class="overlay__note">A private theatre experience.</p>
+  </div>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="thero" id="hero">
+      <img src="../images/prague/the-room.jpg" alt="A full table of players mid-game" class="thero__img" />
+      <div class="thero__scrim"></div>
+      <div class="thero__inner">
+        <h1 class="thero__title">What our players say.</h1>
+      </div>
+    </section>
+
+    <!-- FEATURED -->
+    <section class="tfeature">
+      <blockquote class="tfeature__quote reveal">“The story completely engulfed me.”</blockquote>
+      <p class="note__who reveal">Ankith <span>· played Tomas</span></p>
+    </section>
+
+    <!-- NOTES -->
+    <section class="notes">
+      <div class="notes__col">
+        <article class="note reveal">
+          <blockquote class="note__pull">“I really enjoyed interacting with the other characters during the first part ( the game) and our last conversation ( the vote). The beginning felt like a great way to break the ice and get comfortable with each other. That built a nice place for us to end on a more serious note- it established a feeling of permission to take the game seriously.”</blockquote>
+          <p class="note__who">True <span>· played Milan</span></p>
+        </article>
+      </div>
+      <figure class="notes__photo reveal">
+        <img src="../images/prague/couch.jpg" alt="Players talking on a couch between scenes" loading="lazy" />
+      </figure>
+      <div class="notes__col">
+        <article class="note reveal">
+          <blockquote class="note__pull">“I would recommend it to anyone. I have zero theater or improv experience and I had an amazing time. The prompt sections are wonderful at getting less experienced players out of their shell.”</blockquote>
+          <p class="note__who">James <span>· played Vaclav</span></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="tcta">
+      <p class="tcta__eyebrow reveal">Now Playing · Live in New York City</p>
+      <h2 class="tcta__title reveal">Your table is waiting.</h2>
+      <a class="tcta__link reveal" href="../SIPbeta/">Summertime in Prague · Reserve your seat →</a>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot__top">
+      <div>
+        <a href="../" class="foot__brand">ODEUM</a>
+        <p class="foot__def">(n.) an ancient Greek term for a small theatre</p>
+      </div>
+      <nav class="foot__links" aria-label="Footer">
+        <a href="../#experience">The Experience</a>
+        <a href="../#games">The Games</a>
+        <a href="./">Testimonials</a>
+        <a href="#" aria-label="Odeum on Instagram">Instagram</a>
+      </nav>
+    </div>
+    <div class="foot__bottom">
+      <p>© <span id="year"></span> Odeum</p>
+      <p>A private theatre experience</p>
+    </div>
+  </footer>
+
+  <script src="../js/main.js?v=3"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+/* =========================================================
+   Odeum — testimonials ("In their words")
+   Builds on ../css/styles.css. One short line per guest; no walls of text.
+   ========================================================= */
+
+/* ---------- HERO ---------- */
+.thero {
+  position: relative; height: 72svh; min-height: 480px; overflow: hidden;
+  display: flex; align-items: flex-end;
+}
+.thero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.thero__scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(15,11,8,0.4) 0%, transparent 30%, rgba(15,11,8,0.78) 100%);
+}
+.thero__inner {
+  position: relative; z-index: 2; color: var(--paper);
+  padding: 0 var(--pad) clamp(2.5rem, 7vh, 5rem);
+  animation: theroIn 1.2s 0.6s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+@keyframes theroIn { from { opacity: 0; transform: translateY(18px); } }
+.thero__eyebrow {
+  font-size: 0.74rem; letter-spacing: 0.28em; text-transform: uppercase;
+  color: rgba(241,236,226,0.85); margin-bottom: 1rem;
+}
+.thero__title {
+  font-family: var(--serif); font-weight: 300; font-style: italic;
+  font-size: clamp(3rem, 9vw, 7rem); line-height: 0.95; letter-spacing: -0.02em;
+}
+
+/* ---------- FEATURED QUOTE ---------- */
+.tfeature {
+  max-width: 1100px; margin: 0 auto; text-align: center;
+  padding: clamp(5rem, 14vh, 10rem) var(--pad) clamp(4rem, 10vh, 7rem);
+}
+.tfeature__quote {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(2rem, 5.2vw, 4.2rem); line-height: 1.1; letter-spacing: -0.02em;
+}
+.tfeature .note__who { margin-top: 2rem; }
+
+/* ---------- NOTES ---------- */
+.notes {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: 0 var(--pad) clamp(5rem, 12vh, 9rem);
+  display: grid; grid-template-columns: 1fr 0.8fr 1fr;
+  gap: clamp(2rem, 5vw, 4.5rem); align-items: start;
+}
+.notes__col { display: grid; gap: clamp(3rem, 7vw, 5rem); }
+.notes__col:last-child { margin-top: clamp(4rem, 12vw, 10rem); }   /* staggered, editorial */
+.notes__photo { aspect-ratio: 3 / 4; overflow: hidden; position: sticky; top: 7rem; }
+.notes__photo img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.92); }
+
+.note { border-top: 1px solid var(--line); padding-top: 1.6rem; }
+.note__pull {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(1.2rem, 1.7vw, 1.45rem); line-height: 1.45;
+}
+.note__who {
+  margin-top: 1.1rem;
+  font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink);
+}
+.note__who span { color: var(--ink-faint); }
+
+/* ---------- CTA (dark band, matches "Now Playing") ---------- */
+.tcta {
+  background: var(--ink); color: var(--paper); text-align: center;
+  padding: clamp(5rem, 14vh, 9rem) var(--pad);
+}
+.tcta__eyebrow {
+  font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(241,236,226,0.55);
+}
+.tcta__title {
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(2.4rem, 6vw, 4.6rem); letter-spacing: -0.02em; margin: 1.2rem 0 2rem;
+}
+.tcta__link {
+  font-size: 0.78rem; letter-spacing: 0.16em; text-transform: uppercase; color: #d8b877;
+  border-bottom: 1px solid rgba(216, 184, 119, 0.4); padding-bottom: 0.3rem;
+  transition: border-color 0.3s ease;
+}
+.tcta__link:hover { border-color: #d8b877; }
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px) {
+  .notes { grid-template-columns: 1fr; }
+  .notes__col:last-child { margin-top: 0; }
+  .notes__photo { position: static; aspect-ratio: 16 / 11; order: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .thero__inner { animation: none; } }
