@@ -81,6 +81,20 @@
     window.addEventListener("scroll", onScroll, { passive: true });
   }
 
+  /* ---- Elegant exit to a game page where cross-page view transitions aren't supported ---- */
+  if (!("onpagereveal" in window) && !reduce) {
+    document.querySelectorAll("a.row--link").forEach((a) => {
+      a.addEventListener("click", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        document.body.classList.add("is-leaving");
+        setTimeout(() => { location.href = a.href; }, 480);
+      });
+    });
+    // Coming back via the browser's back button restores the cached page — undo the fade.
+    window.addEventListener("pageshow", () => document.body.classList.remove("is-leaving"));
+  }
+
   /* ---- Invitation form (front-end only, no backend wired yet) ---- */
   const form = document.getElementById("inviteForm");
   const status = document.getElementById("inviteStatus");

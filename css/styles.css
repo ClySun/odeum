@@ -345,9 +345,16 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
    EVENINGS
    ========================================================= */
 .evenings {
-  max-width: var(--maxw); margin: 0 auto;
-  padding: clamp(3rem, 8vh, 6rem) var(--pad) clamp(5rem, 12vh, 9rem);
+  /* Dark band, full-bleed; content stays within --maxw */
+  background: var(--ink); color: var(--paper);
+  padding: clamp(5rem, 12vh, 9rem) max(var(--pad), calc((100% - var(--maxw)) / 2 + var(--pad)));
 }
+.evenings .evenings__sub, .evenings .row__index, .evenings .row__meta { color: rgba(241, 236, 226, 0.55); }
+.evenings .row { border-top-color: rgba(241, 236, 226, 0.12); }
+.evenings .row__text p { color: rgba(241, 236, 226, 0.74); }
+.evenings .row__text p + p { margin-top: 1rem; }
+.evenings .row--link .row__meta { color: #d8b877; }
+.evenings .row--link:hover .row__name { color: #d8b877; }
 .evenings__head {
   text-align: center; margin-bottom: clamp(3rem, 8vw, 6rem);
 }
@@ -506,7 +513,7 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
    FOOTER
    ========================================================= */
 .foot {
-  border-top: 1px solid var(--line);
+  border-top: 0;
   padding: clamp(2.5rem, 6vw, 4rem) var(--pad);
 }
 .foot__top {
@@ -569,4 +576,28 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
   .panel:nth-child(2) { display: none; }         /* single panel on phone */
   .hero__caption { flex-direction: column; align-items: flex-start; gap: 1rem; }
   .foot__bottom { flex-direction: column; align-items: flex-start; }
+}
+
+/* =========================================================
+   PAGE TRANSITIONS
+   Browsers with cross-page view transitions (Chrome, Edge, Safari 18.2+)
+   grow the Prague photo into the beta page's hero; others fade (js/main.js).
+   ========================================================= */
+@view-transition { navigation: auto; }
+.row__photo--prague, .phero__img { view-transition-name: prague-photo; }
+::view-transition-group(prague-photo) { animation-duration: 1s; animation-timing-function: cubic-bezier(0.4, 0, 0.1, 1); }
+::view-transition-old(prague-photo), ::view-transition-new(prague-photo) {
+  width: 100%; height: 100%; object-fit: cover; mix-blend-mode: normal;
+}
+/* One photo, not two: the new (full-screen) shot sits underneath at full opacity and the
+   card's crop dissolves off the top early in the move, so no double image ever shows. */
+::view-transition-new(prague-photo) { animation: none; }
+::view-transition-old(prague-photo) { z-index: 1; animation: vtPhotoOut 0.35s ease-out both; }
+@keyframes vtPhotoOut { to { opacity: 0; } }
+
+body.is-leaving main, body.is-leaving .nav, body.is-leaving .foot { opacity: 0; transition: opacity 0.5s ease; }
+body.is-leaving { background: var(--ink); transition: background 0.5s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
 }
