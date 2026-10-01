@@ -525,6 +525,11 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
   font-family: var(--sans); font-weight: 500;
   letter-spacing: 0.42em; text-indent: 0.42em; font-size: 1.1rem;
 }
+.foot__def {
+  margin-top: 0.7rem;
+  font-family: var(--serif); font-style: italic; font-weight: 300;
+  font-size: 0.95rem; color: var(--ink-faint);
+}
 .foot__links {
   display: flex; flex-wrap: wrap; gap: clamp(1.2rem, 3vw, 2.4rem);
   font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase;
@@ -581,19 +586,13 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
 /* =========================================================
    PAGE TRANSITIONS
    Browsers with cross-page view transitions (Chrome, Edge, Safari 18.2+)
-   grow the Prague photo into the beta page's hero; others fade (js/main.js).
+   fade between pages; others fade out via js/main.js.
    ========================================================= */
 @view-transition { navigation: auto; }
-.row__photo--prague, .phero__img { view-transition-name: prague-photo; }
-::view-transition-group(prague-photo) { animation-duration: 1s; animation-timing-function: cubic-bezier(0.4, 0, 0.1, 1); }
-::view-transition-old(prague-photo), ::view-transition-new(prague-photo) {
-  width: 100%; height: 100%; object-fit: cover; mix-blend-mode: normal;
-}
-/* One photo, not two: the new (full-screen) shot sits underneath at full opacity and the
-   card's crop dissolves off the top early in the move, so no double image ever shows. */
-::view-transition-new(prague-photo) { animation: none; }
-::view-transition-old(prague-photo) { z-index: 1; animation: vtPhotoOut 0.35s ease-out both; }
-@keyframes vtPhotoOut { to { opacity: 0; } }
+::view-transition-old(root) { animation: vtOut 0.4s ease both; }
+::view-transition-new(root) { animation: vtIn 0.5s 0.25s ease both; }
+@keyframes vtOut { to { opacity: 0; } }
+@keyframes vtIn { from { opacity: 0; } }
 
 body.is-leaving main, body.is-leaving .nav, body.is-leaving .foot { opacity: 0; transition: opacity 0.5s ease; }
 body.is-leaving { background: var(--ink); transition: background 0.5s ease; }
