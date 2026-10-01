@@ -309,8 +309,6 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
 
 .timeline {
   margin-top: clamp(3.5rem, 9vh, 6rem);
-  padding-top: 2.5rem;
-  border-top: 1px solid var(--line);
 }
 .timeline__label {
   font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
