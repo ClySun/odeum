@@ -45,6 +45,7 @@
      STATE + ELEMENTS
      --------------------------------------------------------- */
   var statusMap = {}; // slotId -> "Pending" | "Confirmed" | ...
+  var loadError = false; // true when live availability couldn't be fetched
   var expanded = {};  // session id -> true when a fully booked date has been opened
   var selected = null;
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -129,6 +130,13 @@
   function render(loading) {
     sessionsEl.innerHTML = "";
 
+    if (loadError && !loading) {
+      var err = document.createElement("div");
+      err.className = "avail-error";
+      err.textContent = "Couldn't load live availability just now — please refresh the page.";
+      sessionsEl.appendChild(err);
+    }
+
     if (loading) {
       var bar = document.createElement("div");
       bar.className = "avail-bar";
@@ -205,14 +213,35 @@
   /* ---------------------------------------------------------
      AVAILABILITY
      --------------------------------------------------------- */
+  function fetchAvailability(attempt) {
+    // Cache-bust + no-store so we never get a stale cached response
+    // (that was the "shows open until I refresh" bug).
+    var url = SCRIPT_URL + (SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + "nocache=" + Date.now();
+    return fetch(url, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) throw new Error("bad payload");
+        statusMap = d.slots || {};
+        loadError = false;
+        render(false);
+      })
+      .catch(function () {
+        if (attempt < 3) {
+          return new Promise(function (res) { setTimeout(res, 700 * attempt); }).then(function () {
+            return fetchAvailability(attempt + 1);
+          });
+        }
+        // Gave up after retries — warn instead of showing (possibly wrong) availability.
+        loadError = true;
+        render(false);
+      });
+  }
+
   function loadAvailability() {
     var allFull = SESSIONS.every(function (s) { return s.full; });
     if (!SCRIPT_URL || allFull) { render(false); return; } // nothing to fetch
     render(true); // show dates + names + progress bar immediately
-    fetch(SCRIPT_URL)
-      .then(function (r) { return r.json(); })
-      .then(function (d) { statusMap = (d && d.slots) || {}; render(false); })
-      .catch(function () { render(false); });
+    fetchAvailability(1);
   }
 
   /* ---------------------------------------------------------
