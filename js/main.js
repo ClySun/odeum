@@ -10,10 +10,15 @@
   const hero = document.getElementById("hero");
   const setNav = () => {
     const past = window.scrollY > (hero ? hero.offsetHeight - 90 : 200);
-    if (nav) nav.classList.toggle("is-solid", past);
+    if (nav) {
+      nav.classList.toggle("is-solid", past);
+      // Expose the current nav height so the sticky playtest banner pins right beneath it.
+      document.documentElement.style.setProperty("--nav-h", nav.offsetHeight + "px");
+    }
   };
   setNav();
   window.addEventListener("scroll", setNav, { passive: true });
+  window.addEventListener("resize", setNav, { passive: true });
 
   /* ---- Overlay menu ---- */
   const menuBtn = document.getElementById("menuBtn");
