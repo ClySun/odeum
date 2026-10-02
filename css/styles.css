@@ -264,6 +264,23 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
 /* =========================================================
    FULL-BLEED FEATURE
    ========================================================= */
+/* ---------- Playtest invite banner (dark, highlighted) ---------- */
+.promo {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 0.35rem 0.6rem;
+  padding: 1rem clamp(1.25rem, 5vw, 3.5rem);
+  background: var(--ink);
+  font-size: 0.92rem; letter-spacing: 0.04em; text-align: center;
+  transition: background 0.35s var(--ease);
+}
+.promo__lead { color: rgba(241, 236, 226, 0.88); }
+.promo__cta {
+  color: #e2c37e; font-weight: 500; letter-spacing: 0.05em;
+  transition: color 0.35s var(--ease);
+}
+.promo:hover { background: #221b18; }
+.promo:hover .promo__cta { color: #f3dca1; }
+
 .feature { width: 100%; height: clamp(60vh, 82vh, 900px); overflow: hidden; background: var(--ink); }
 .feature__img {
   display: block; width: 100%; height: 120%;

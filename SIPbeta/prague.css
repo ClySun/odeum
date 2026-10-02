@@ -6,6 +6,11 @@
 
 .prague { background: var(--paper); color: var(--ink); }
 
+/* Smooth in-page scrolling (e.g. hero button → availability) */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
 /* ---------- NAV ---------- */
 .pnav {
   position: absolute; top: 0; left: 0; right: 0; z-index: 20;
