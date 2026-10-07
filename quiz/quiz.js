@@ -283,8 +283,7 @@
     });
 
     el("resultNote").textContent =
-      "A match is about how naturally a character comes to you — not a limit. " +
-      "You’re welcome to request any seat when you reserve.";
+      "Please take a screenshot of your results to remember them!";
   }
 
   /* ---------------------------------------------------------
