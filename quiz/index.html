@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Summertime in Prague — a short character-fit quiz. Answer five questions and find the character who feels most natural for you to step into." />
+  <meta name="theme-color" content="#f1ece2" />
+  <!-- Unlisted beta page: keep it out of search results -->
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Character Fit — Summertime in Prague</title>
+
+  <link rel="icon" href="../favicon.svg?v=2" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Odeum" />
+  <meta property="og:title" content="Which character fits you? — Summertime in Prague" />
+  <meta property="og:description" content="Five short questions to find the character who feels most natural for you to step into." />
+  <meta property="og:image" content="https://clysun.github.io/odeum/images/prague/table-lamp.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../css/styles.css?v=16" />
+  <link rel="stylesheet" href="quiz.css?v=1" />
+</head>
+<body class="prague quiz">
+  <!-- NAV -->
+  <header class="pnav pnav--solid" id="pnav">
+    <a href="../" class="pnav__home" aria-label="Back to Odeum">ODEUM</a>
+    <span class="pnav__tag">Character Fit</span>
+  </header>
+
+  <main class="qwrap">
+    <!-- ======================= INTRO ======================= -->
+    <section class="qcard qstep" id="stepIntro">
+      <p class="qeyebrow">Summertime in Prague · Beta</p>
+      <h1 class="qtitle">Which character<br />fits you?</h1>
+      <p class="qlead">
+        These questions help us find a character who feels natural for you to step into.
+        There are no right answers — choose what feels most like you.
+      </p>
+
+      <form id="introForm" class="qintro" novalidate>
+        <div class="qfield">
+          <label for="q-name">Your name</label>
+          <input id="q-name" name="name" type="text" autocomplete="name" required />
+        </div>
+        <div class="qfield">
+          <label for="q-email">Email</label>
+          <input id="q-email" name="email" type="email" autocomplete="email" required />
+        </div>
+
+        <div class="qfield">
+          <span class="qfield__label">Which characters shall we match you with?</span>
+          <div class="qseg" role="radiogroup" aria-label="Character preference">
+            <label class="qseg__opt">
+              <input type="radio" name="pref" value="any" checked />
+              <span>No preference</span>
+            </label>
+            <label class="qseg__opt">
+              <input type="radio" name="pref" value="female" />
+              <span>Female</span>
+            </label>
+            <label class="qseg__opt">
+              <input type="radio" name="pref" value="male" />
+              <span>Male</span>
+            </label>
+          </div>
+        </div>
+
+        <p class="qstatus" id="introStatus" role="alert"></p>
+        <button type="submit" class="pbtn pbtn--dark qbegin">Begin the quiz</button>
+      </form>
+    </section>
+
+    <!-- ======================= QUIZ ======================= -->
+    <section class="qcard qstep" id="stepQuiz" hidden>
+      <div class="qprogress">
+        <span class="qprogress__count" id="qCount">01 — 05</span>
+        <span class="qprogress__track"><span id="qBarFill"></span></span>
+      </div>
+      <h2 class="qquestion" id="qPrompt"></h2>
+      <div class="qoptions" id="qOptions"></div>
+      <div class="qnav">
+        <button type="button" class="qlink" id="qBack">← Back</button>
+        <button type="button" class="pbtn pbtn--dark qcontinue" id="qNext" disabled>Continue</button>
+      </div>
+    </section>
+
+    <!-- ======================= RESULT ======================= -->
+    <section class="qcard qstep qresult" id="stepResult" hidden>
+      <p class="qeyebrow" id="resultEyebrow">Your strongest matches</p>
+      <h2 class="qresult__title" id="resultTitle"></h2>
+      <div class="qmatches" id="qMatches"></div>
+      <p class="qresult__note" id="resultNote"></p>
+      <div class="qresult__actions">
+        <a href="../SIPbeta/" class="pbtn pbtn--dark">Reserve a seat →</a>
+        <button type="button" class="qlink" id="qRetake">Retake the quiz</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="quiz.js?v=1"></script>
+</body>
+</html>

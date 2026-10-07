@@ -22,12 +22,24 @@ var HEADERS = ['Timestamp', 'SlotID', 'Session', 'Character', 'Age', 'Name', 'Em
 var OPEN_STATUSES = { '': 1, 'cancelled': 1, 'canceled': 1, 'rejected': 1, 'declined': 1 };
 var NOTIFY_EMAIL = 'sunpuxin@gmail.com'; // a note is emailed here on every new signup
 
+// Character-fit quiz submissions land on their own tab.
+var QUIZ_SHEET_NAME = 'Quiz';
+var QUIZ_HEADERS = ['Timestamp', 'Name', 'Email', 'Preference',
+  'Top 1', 'Top 1 %', 'Top 2', 'Top 2 %', 'Top 3', 'Top 3 %',
+  'Eva', 'Vaclav', 'Tomas', 'Petra', 'Milan', 'Vera', 'Answers'];
+
 function doGet(e) {
   return json_({ ok: true, slots: takenMap_() });
 }
 
 function doPost(e) {
   var p = (e && e.parameter) ? e.parameter : {};
+
+  // Character-fit quiz results go to their own tab (no slot locking involved).
+  if (String(p.action || '') === 'quiz') {
+    return handleQuiz_(p);
+  }
+
   var slotId = String(p.slotId || '').trim();
   var name = String(p.name || '').trim();
   var email = String(p.email || '').trim();
@@ -67,7 +79,45 @@ function doPost(e) {
   }
 }
 
+/* ---------- quiz ---------- */
+
+/** Appends one character-fit quiz result to the Quiz tab. */
+function handleQuiz_(p) {
+  var name = String(p.name || '').trim();
+  var email = String(p.email || '').trim();
+  if (!name || !email) return json_({ ok: false, error: 'missing_fields' });
+
+  try {
+    quizSheet_().appendRow([
+      new Date(),
+      name,
+      email,
+      String(p.preference || ''),
+      String(p.top1 || ''), String(p.top1pct || ''),
+      String(p.top2 || ''), String(p.top2pct || ''),
+      String(p.top3 || ''), String(p.top3pct || ''),
+      String(p.scoreEva || ''), String(p.scoreVaclav || ''), String(p.scoreTomas || ''),
+      String(p.scorePetra || ''), String(p.scoreMilan || ''), String(p.scoreVera || ''),
+      String(p.answers || '')
+    ]);
+    return json_({ ok: true, saved: 'quiz' });
+  } catch (err) {
+    return json_({ ok: false, error: 'server' });
+  }
+}
+
 /* ---------- helpers ---------- */
+
+function quizSheet_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(QUIZ_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(QUIZ_SHEET_NAME);
+    sh.appendRow(QUIZ_HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
 
 function sheet_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
