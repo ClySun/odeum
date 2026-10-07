@@ -81,28 +81,55 @@ function doPost(e) {
 
 /* ---------- quiz ---------- */
 
-/** Appends one character-fit quiz result to the Quiz tab. */
+/**
+ * Records one character-fit quiz result on the Quiz tab.
+ * One row per person (matched by email): a retake OVERWRITES that person's
+ * existing row rather than adding a second one.
+ */
 function handleQuiz_(p) {
   var name = String(p.name || '').trim();
   var email = String(p.email || '').trim();
   if (!name || !email) return json_({ ok: false, error: 'missing_fields' });
 
+  var row = [
+    new Date(),
+    name,
+    email,
+    String(p.preference || ''),
+    String(p.top1 || ''), String(p.top1pct || ''),
+    String(p.top2 || ''), String(p.top2pct || ''),
+    String(p.top3 || ''), String(p.top3pct || ''),
+    String(p.scoreEva || ''), String(p.scoreVaclav || ''), String(p.scoreTomas || ''),
+    String(p.scorePetra || ''), String(p.scoreMilan || ''), String(p.scoreVera || ''),
+    String(p.answers || '')
+  ];
+
+  var lock = LockService.getScriptLock();
   try {
-    quizSheet_().appendRow([
-      new Date(),
-      name,
-      email,
-      String(p.preference || ''),
-      String(p.top1 || ''), String(p.top1pct || ''),
-      String(p.top2 || ''), String(p.top2pct || ''),
-      String(p.top3 || ''), String(p.top3pct || ''),
-      String(p.scoreEva || ''), String(p.scoreVaclav || ''), String(p.scoreTomas || ''),
-      String(p.scorePetra || ''), String(p.scoreMilan || ''), String(p.scoreVera || ''),
-      String(p.answers || '')
-    ]);
-    return json_({ ok: true, saved: 'quiz' });
+    lock.waitLock(20000);
+  } catch (err) {
+    return json_({ ok: false, error: 'busy' });
+  }
+
+  try {
+    var sh = quizSheet_();
+    var values = sh.getDataRange().getValues();
+    var emailLc = email.toLowerCase();
+    var foundRow = -1;
+    // Scan from the bottom so we update this person's most recent row.
+    for (var i = values.length - 1; i >= 1; i--) {
+      if (String(values[i][2] || '').trim().toLowerCase() === emailLc) { foundRow = i + 1; break; }
+    }
+    if (foundRow > 0) {
+      sh.getRange(foundRow, 1, 1, row.length).setValues([row]);
+      return json_({ ok: true, saved: 'quiz', updated: true });
+    }
+    sh.appendRow(row);
+    return json_({ ok: true, saved: 'quiz', updated: false });
   } catch (err) {
     return json_({ ok: false, error: 'server' });
+  } finally {
+    lock.releaseLock();
   }
 }
 

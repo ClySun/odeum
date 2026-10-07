@@ -320,17 +320,15 @@
     fetch(SCRIPT_URL, { method: "POST", body: body }).catch(function () { /* silent — results already shown */ });
   }
 
+  // Retake: keep the same name / email / preference and go straight back to
+  // question one. The new result overwrites this person's row in the sheet
+  // (matched by email) rather than adding a second row.
   el("qRetake").addEventListener("click", function () {
-    introForm.reset();
-    introStatus.textContent = "";
-    // Clear the preference choice so it's picked fresh next time.
-    player.pref = "";
-    prefNext.disabled = true;
-    Array.prototype.forEach.call(prefOptions.querySelectorAll(".qpref"), function (b) {
-      b.classList.remove("is-picked");
-      b.setAttribute("aria-checked", "false");
-    });
-    show(stepIntro);
+    answers = [];
+    current = 0;
+    submitted = false;
+    show(stepQuiz);
+    renderQuestion();
   });
 
 })();
