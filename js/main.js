@@ -92,27 +92,6 @@
     }
   }
 
-  /* ---- Subtle parallax on the full-bleed feature image ---- */
-  const feature = document.querySelector(".feature__img");
-  if (feature && !reduce) {
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const rect = feature.getBoundingClientRect();
-        const vh = window.innerHeight;
-        if (rect.bottom > 0 && rect.top < vh) {
-          const progress = (rect.top + rect.height / 2 - vh / 2) / vh; // -0.5..0.5-ish
-          feature.style.transform = `translateY(${(-progress * 40).toFixed(1)}px)`;
-        }
-        ticking = false;
-      });
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-  }
-
   /* ---- Elegant exit to a game page where cross-page view transitions aren't supported ---- */
   if (!("onpagereveal" in window) && !reduce) {
     document.querySelectorAll("a.row--link").forEach((a) => {

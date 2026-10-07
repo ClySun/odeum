@@ -284,13 +284,13 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
 .promo:hover { background: #221b18; }
 .promo:hover .promo__cta { color: #f3dca1; }
 
-.feature { width: 100%; height: clamp(60vh, 82vh, 900px); overflow: hidden; background: var(--ink); }
+/* Full-bleed feature: spans the page at the video's true 4:3 ratio (no crop). */
+.feature { width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--ink); }
 .feature__img {
-  display: block; width: 100%; height: 120%;
-  object-fit: cover;
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; /* container matches the 4:3 source, so nothing is cropped */
   filter: brightness(0.86);
   background: var(--ink);
-  will-change: transform;
 }
 
 /* =========================================================
@@ -591,9 +591,6 @@ body.menu-open .overlay__nav a:nth-child(4) { transition-delay: .26s; }
   .hero__panels { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
   .panel:nth-child(3) { display: none; }        /* two panels on tablet */
   .panel { border-right: none; border-bottom: 1px solid rgba(241,236,226,0.12); }
-  /* Feature video: a landscape 4:3 band (matches the video) instead of a tall vertical crop */
-  .feature { height: auto; aspect-ratio: 4 / 3; }
-  .feature__img { height: 100%; transform: none !important; }
   .row, .row--reverse { grid-template-columns: 1fr; gap: 1.4rem; }
   .row--reverse .row__media { order: 0; }
   .row__media { aspect-ratio: 16 / 11; }
