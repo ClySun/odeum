@@ -47,21 +47,48 @@
     reveals.forEach((el) => el.classList.add("is-in"));
   }
 
-  /* ---- Feature video: always muted, loads only when near the viewport ---- */
+  /* ---- Feature video: muted autoplay loop, loads only when near the viewport ----
+     Cold mobile loads often reject the first play() (the clip isn't buffered yet),
+     so instead of swallowing that we retry once the media can actually play — and
+     only while the band is still on screen. */
   const video = document.querySelector("video.feature__img");
   if (video) {
     video.muted = true;
-    const load = () => {
-      if (!video.src) video.src = video.dataset.src;
-      if (!reduce) video.play().catch(() => {});
+    let inView = false;
+    let retryQueued = false;
+
+    const attemptPlay = () => {
+      if (reduce) return;
+      const p = video.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          if (retryQueued) return;          // one pending retry at a time
+          retryQueued = true;
+          video.addEventListener("canplay", () => {
+            retryQueued = false;
+            if (inView) video.play().catch(() => {});
+          }, { once: true });
+        });
+      }
     };
+
+    const enter = () => {
+      inView = true;
+      if (!video.src) video.src = video.dataset.src;
+      attemptPlay();
+    };
+    const leave = () => {
+      inView = false;
+      if (!reduce) video.pause();
+    };
+
     if ("IntersectionObserver" in window) {
       const vio = new IntersectionObserver((entries) => {
-        entries.forEach((e) => (e.isIntersecting ? load() : video.pause()));
+        entries.forEach((e) => (e.isIntersecting ? enter() : leave()));
       }, { rootMargin: "300px 0px" });
       vio.observe(video);
     } else {
-      load();
+      enter();
     }
   }
 
