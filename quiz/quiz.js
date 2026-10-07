@@ -141,19 +141,20 @@
      STATE + ELEMENTS
      --------------------------------------------------------- */
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var player = { name: "", email: "", pref: "any" };
+  var player = { name: "", email: "", pref: "" };
   var answers = [];      // chosen option object per question
   var current = 0;       // index into QUESTIONS
   var submitted = false; // guard against double-posting
 
   var el = function (id) { return document.getElementById(id); };
-  var stepIntro = el("stepIntro"), stepQuiz = el("stepQuiz"), stepResult = el("stepResult");
+  var stepIntro = el("stepIntro"), stepPref = el("stepPref"), stepQuiz = el("stepQuiz"), stepResult = el("stepResult");
   var introForm = el("introForm"), introStatus = el("introStatus");
+  var prefOptions = el("prefOptions"), prefBack = el("prefBack"), prefNext = el("prefNext");
   var qCount = el("qCount"), qBarFill = el("qBarFill"), qPrompt = el("qPrompt"),
       qOptions = el("qOptions"), qBack = el("qBack"), qNext = el("qNext");
 
   function show(step) {
-    [stepIntro, stepQuiz, stepResult].forEach(function (s) { s.hidden = (s !== step); });
+    [stepIntro, stepPref, stepQuiz, stepResult].forEach(function (s) { s.hidden = (s !== step); });
     window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
   }
 
@@ -173,7 +174,28 @@
     introStatus.textContent = "";
     player.name = name;
     player.email = email;
-    player.pref = (introForm.pref.value || "any");
+    show(stepPref);
+  });
+
+  /* ---------------------------------------------------------
+     PREFERENCE (its own screen — kept separate from scoring)
+     --------------------------------------------------------- */
+  Array.prototype.forEach.call(prefOptions.querySelectorAll(".qpref"), function (btn) {
+    btn.addEventListener("click", function () {
+      player.pref = btn.getAttribute("data-pref");
+      Array.prototype.forEach.call(prefOptions.querySelectorAll(".qpref"), function (b) {
+        var on = (b === btn);
+        b.classList.toggle("is-picked", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+      });
+      prefNext.disabled = false;
+    });
+  });
+
+  prefBack.addEventListener("click", function () { show(stepIntro); });
+
+  prefNext.addEventListener("click", function () {
+    if (!player.pref) return;
     answers = [];
     current = 0;
     submitted = false;
@@ -225,7 +247,7 @@
 
   qBack.addEventListener("click", function () {
     if (current > 0) { current--; renderQuestion(); }
-    else { show(stepIntro); }
+    else { show(stepPref); }
   });
 
   /* ---------------------------------------------------------
@@ -301,6 +323,13 @@
   el("qRetake").addEventListener("click", function () {
     introForm.reset();
     introStatus.textContent = "";
+    // Clear the preference choice so it's picked fresh next time.
+    player.pref = "";
+    prefNext.disabled = true;
+    Array.prototype.forEach.call(prefOptions.querySelectorAll(".qpref"), function (b) {
+      b.classList.remove("is-picked");
+      b.setAttribute("aria-checked", "false");
+    });
     show(stepIntro);
   });
 

@@ -23,7 +23,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="../css/styles.css?v=16" />
-  <link rel="stylesheet" href="quiz.css?v=1" />
+  <link rel="stylesheet" href="quiz.css?v=2" />
 </head>
 <body class="prague quiz">
   <!-- NAV -->
@@ -52,27 +52,37 @@
           <input id="q-email" name="email" type="email" autocomplete="email" required />
         </div>
 
-        <div class="qfield">
-          <span class="qfield__label">Which characters shall we match you with?</span>
-          <div class="qseg" role="radiogroup" aria-label="Character preference">
-            <label class="qseg__opt">
-              <input type="radio" name="pref" value="any" checked />
-              <span>No preference</span>
-            </label>
-            <label class="qseg__opt">
-              <input type="radio" name="pref" value="female" />
-              <span>Female</span>
-            </label>
-            <label class="qseg__opt">
-              <input type="radio" name="pref" value="male" />
-              <span>Male</span>
-            </label>
-          </div>
-        </div>
-
         <p class="qstatus" id="introStatus" role="alert"></p>
-        <button type="submit" class="pbtn pbtn--dark qbegin">Begin the quiz</button>
+        <button type="submit" class="pbtn pbtn--dark qbegin">Continue</button>
       </form>
+    </section>
+
+    <!-- ======================= PREFERENCE ======================= -->
+    <section class="qcard qstep" id="stepPref" hidden>
+      <p class="qeyebrow">Before we begin</p>
+      <h2 class="qquestion">Would you like to play a<br />male or female character?</h2>
+      <div class="qprefs" id="prefOptions" role="radiogroup" aria-label="Character preference">
+        <button type="button" class="qpref" data-pref="female" role="radio" aria-checked="false">
+          <span class="qpref__title">A female character</span>
+          <span class="qpref__sub">Eva · Petra · Vera</span>
+        </button>
+        <button type="button" class="qpref" data-pref="male" role="radio" aria-checked="false">
+          <span class="qpref__title">A male character</span>
+          <span class="qpref__sub">Vaclav · Tomas · Milan</span>
+        </button>
+        <button type="button" class="qpref" data-pref="any" role="radio" aria-checked="false">
+          <span class="qpref__title">No preference</span>
+          <span class="qpref__sub">Open to all six</span>
+        </button>
+      </div>
+      <p class="qnote">
+        For your first game, it’s often most enjoyable to stay close to your own
+        comfort zone — there’ll be plenty of room to stretch further next time.
+      </p>
+      <div class="qnav">
+        <button type="button" class="qlink" id="prefBack">← Back</button>
+        <button type="button" class="pbtn pbtn--dark qcontinue" id="prefNext" disabled>Continue</button>
+      </div>
     </section>
 
     <!-- ======================= QUIZ ======================= -->
@@ -102,6 +112,6 @@
     </section>
   </main>
 
-  <script src="quiz.js?v=1"></script>
+  <script src="quiz.js?v=2"></script>
 </body>
 </html>

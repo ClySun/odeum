@@ -78,22 +78,24 @@
 }
 .qfield input:focus { outline: none; border-bottom-color: var(--ink); }
 
-/* Segmented preference control */
-.qseg { display: inline-flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.3rem; }
-.qseg__opt { position: relative; }
-.qseg__opt input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
-.qseg__opt span {
-  display: inline-flex; align-items: center; padding: 0.55rem 1.1rem;
-  border: 1px solid var(--line); border-radius: 100px; cursor: pointer;
-  font-size: 0.8rem; letter-spacing: 0.06em; color: var(--ink-soft);
-  transition: background 0.3s var(--ease), color 0.3s var(--ease), border-color 0.3s var(--ease);
-}
-.qseg__opt input:hover + span { border-color: var(--ink-faint); }
-.qseg__opt input:focus-visible + span { outline: 2px solid var(--wine); outline-offset: 2px; }
-.qseg__opt input:checked + span { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-
 .qstatus { min-height: 1.2em; margin: 0.2rem 0 1rem; font-size: 0.9rem; color: var(--wine); }
 .qbegin { width: 100%; }
+
+/* ---------- Preference step ---------- */
+.qprefs { display: grid; gap: 0.7rem; margin-top: 0.4rem; }
+.qpref {
+  display: flex; flex-direction: column; gap: 0.3rem; width: 100%; text-align: left;
+  background: transparent; border: 1px solid var(--line); border-radius: 14px;
+  padding: 1.1rem 1.3rem; cursor: pointer; color: var(--ink);
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.qpref:hover { border-color: var(--ink-faint); background: rgba(25,21,18,0.02); }
+.qpref.is-picked { border-color: var(--wine); background: rgba(122,46,43,0.06); }
+.qpref__title { font-family: var(--serif); font-weight: 400; font-size: clamp(1.2rem, 2.2vw, 1.5rem); }
+.qpref__sub { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+.qnote {
+  margin: 1.5rem 0 0; font-size: 0.85rem; line-height: 1.6; color: var(--ink-faint); max-width: 48ch;
+}
 
 /* ---------- Question step ---------- */
 .qprogress { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
