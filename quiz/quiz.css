@@ -14,7 +14,9 @@
 .pnav {
   position: absolute; top: 0; left: 0; right: 0; z-index: 20;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1.5rem clamp(1.25rem, 5vw, 3.5rem);
+  /* Clear the phone status bar / notch (safe-area) and keep breathing room. */
+  padding: calc(1.5rem + env(safe-area-inset-top, 0px))
+           clamp(1.25rem, 5vw, 3.5rem) 1.5rem;
   color: var(--ink);
 }
 .pnav__home {
@@ -171,6 +173,9 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 560px) {
+  /* More breathing room below the status bar on phones */
+  .pnav { padding-top: calc(2rem + env(safe-area-inset-top, 0px)); }
+  .qwrap { padding-top: calc(7rem + env(safe-area-inset-top, 0px)); }
   .qmatch { grid-template-columns: 70px 1fr; gap: 0.95rem; padding: 0.85rem 1rem; }
   .qmatch__art { width: 70px; height: 90px; }
   .qnav { flex-direction: row; }
