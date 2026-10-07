@@ -168,7 +168,7 @@
 .qmatch--top .qmatch__meter span { background: var(--ink); }
 .qmatch__line { font-size: 0.9rem; line-height: 1.5; color: var(--ink-soft); }
 
-.qresult__note { margin: 1.8rem 0 0; font-size: 0.92rem; line-height: 1.55; color: var(--ink-faint); max-width: 52ch; }
+.qresult__note { margin: 1.8rem 0 0; font-size: 0.92rem; line-height: 1.55; color: var(--wine); font-weight: 500; max-width: 52ch; }
 .qresult__actions { display: flex; align-items: center; gap: 1.4rem; margin-top: 2rem; flex-wrap: wrap; }
 
 /* ---------- Responsive ---------- */
