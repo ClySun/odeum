@@ -91,7 +91,7 @@
     { trait: "Q5", weight: 10,
       prompt: "The chief editor asks everyone to propose a piece for the next issue. What feels most natural?",
       options: [
-        { k: "A", text: "Pitch something hopeful or uplifting that could give people a sense of possibility." },
+        { k: "A", text: "Pitch something hopeful or uplifting to convey optimism." },
         { k: "B", text: "Make a strong argument about something you care about and push people to engage with it." },
         { k: "C", text: "Develop an idea you’ve already been thinking about and work out how to make it stronger." },
         { k: "D", text: "Write about the subject everyone else seems reluctant to touch." },
