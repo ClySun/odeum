@@ -61,42 +61,42 @@
   // Q5 options are letters only; scoring uses each character's q5 table.
   var QUESTIONS = [
     { trait: "C", weight: 5,
-      prompt: "The deadline is tomorrow, and your article isn’t finished. What are you doing tonight?",
+      prompt: "The deadline for your article is tomorrow. What are you most likely doing tonight?",
       options: [
-        { k: "A", level: 2, text: "Revising again. I’d rather lose sleep than turn in something I’m not happy with." },
-        { k: "B", level: 1, text: "Finishing the important parts and cleaning up the rest tomorrow." },
-        { k: "C", level: 0, text: "Still writing. Deadlines tend to be when the words finally come." }
+        { k: "A", level: 2, text: "The article is already finished. I’m probably still revising and polishing it until I’m satisfied." },
+        { k: "B", level: 1, text: "I’m wrapping up the last few details. I know I’ll have it finished on time." },
+        { k: "C", level: 0, text: "I’m still deep in the writing. I tend to work closer to the deadline, and the pressure helps me focus." }
       ] },
     { trait: "E", weight: 12,
-      prompt: "A heated discussion breaks out in the editorial office. You’re most likely to…",
+      prompt: "A heated discussion breaks out in the editorial office about what the next issue should say. You’re most likely to…",
       options: [
-        { k: "A", level: 2, text: "Jump in. Talking helps me figure out what I think." },
-        { k: "B", level: 1, text: "Listen first, then speak when I have something to add." },
-        { k: "C", level: 0, text: "Mostly watch the room and form my thoughts privately." }
+        { k: "A", level: 2, text: "Jump in and help guide the conversation, keeping track of everyone’s ideas and the mood in the room." },
+        { k: "B", level: 1, text: "Listen for a while, then speak when I have something I really want to add." },
+        { k: "C", level: 0, text: "Mostly watch the room and see where the conversation is going before deciding whether to contribute." }
       ] },
     { trait: "A", weight: 13,
-      prompt: "A colleague shows you an article you strongly disagree with. What do you do?",
+      prompt: "A colleague shows you an article you think is badly argued, but they clearly care about it. What do you do?",
       options: [
-        { k: "A", level: 2, text: "Start with what works, then gently suggest changes." },
-        { k: "B", level: 1, text: "Tell them what I disagree with, but keep it constructive." },
-        { k: "C", level: 0, text: "Tell them plainly where I think the argument falls apart." }
+        { k: "A", level: 2, text: "Start with what works. I want them to feel that I appreciate the effort they put into it before I gently suggest changes." },
+        { k: "B", level: 1, text: "Give constructive feedback to help make the article stronger, while paying attention to how they’re reacting and adjusting how much I say." },
+        { k: "C", level: 0, text: "Tell them clearly where I think the argument fails. If something isn’t working, I think an honest opinion is the most helpful." }
       ] },
     { trait: "S", weight: 10,
       prompt: "Something you published has upset someone powerful. That evening, you…",
       options: [
-        { k: "A", level: 2, text: "Carry on. There’s nothing to do until something actually happens." },
-        { k: "B", level: 1, text: "Think about it for a while, then manage to move on." },
-        { k: "C", level: 0, text: "Replay the article and every possible consequence in your head." }
+        { k: "A", level: 2, text: "Carry on with your evening. There’s nothing useful to do unless something actually happens." },
+        { k: "B", level: 1, text: "Feel nervous or unsettled, but try to distract yourself with whatever needs your attention." },
+        { k: "C", level: 0, text: "Keep replaying the article and imagining every possible consequence." }
       ] },
     { trait: "Q5", weight: 10,
       prompt: "The chief editor asks everyone to propose a piece for the next issue. What feels most natural?",
       options: [
-        { k: "A", text: "Find an idea the whole room can get behind." },
-        { k: "B", text: "Make a strong argument and push people to engage with it." },
-        { k: "C", text: "Take a promising idea and figure out how to make it work." },
-        { k: "D", text: "Write about the thing everyone else is avoiding." },
-        { k: "E", text: "Work quietly on something personal until it feels ready." },
-        { k: "F", text: "Throw out an unexpected idea and see where it goes." }
+        { k: "A", text: "Pitch something hopeful or uplifting that could give people a sense of possibility." },
+        { k: "B", text: "Make a strong argument about something you care about and push people to engage with it." },
+        { k: "C", text: "Develop an idea you’ve already been thinking about and work out how to make it stronger." },
+        { k: "D", text: "Write about the subject everyone else seems reluctant to touch." },
+        { k: "E", text: "Work quietly on something personal and only bring it forward once it feels ready." },
+        { k: "F", text: "Chase a new idea that feels fresh, exciting, and full of possibilities." }
       ] }
   ];
 
