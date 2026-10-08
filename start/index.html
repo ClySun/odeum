@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Join an evening of Summertime in Prague — read about the game, find your character, and see available game times." />
+  <meta name="theme-color" content="#f1ece2" />
+  <!-- Temporary / unlisted entry page: keep it out of search results -->
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Join — Summertime in Prague</title>
+
+  <link rel="icon" href="../favicon.svg?v=2" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../css/styles.css?v=17" />
+  <link rel="stylesheet" href="start.css?v=1" />
+</head>
+<body class="prague start">
+  <!-- NAV -->
+  <header class="pnav pnav--solid" id="pnav">
+    <a href="../" class="pnav__home" aria-label="Back to Odeum">ODEUM</a>
+    <span class="pnav__tag">Join a game</span>
+  </header>
+
+  <main class="hub">
+    <!-- INTRO -->
+    <section class="hub__intro">
+      <p class="hub__eyebrow">Summertime in Prague · Beta</p>
+      <h1 class="hub__title">Join an evening.</h1>
+      <p class="hub__lead">
+        Three quick steps: get to know the game, find the character who fits you,
+        then pick a night with open seats.
+      </p>
+    </section>
+
+    <!-- 01 · ABOUT THE GAME -->
+    <section class="step step--feature">
+      <figure class="step__media">
+        <img src="../images/prague/table-lamp.jpg" alt="A cast of six around a lamplit table in character" loading="lazy" />
+      </figure>
+      <div class="step__body">
+        <span class="step__num">01 — The game</span>
+        <h2 class="step__title">Summertime in Prague</h2>
+        <p class="step__text">
+          Czechoslovakia, 1968. You are writers for a literary magazine, testing the
+          boundaries of what can finally be said — while someone at your table may be
+          reporting what they hear. A private theatre game for six.
+        </p>
+        <a class="pbtn pbtn--dark" href="../SIPbeta/">Read more about the game →</a>
+      </div>
+    </section>
+
+    <!-- 02 · CASTING TEST -->
+    <section class="step">
+      <div class="step__body step__body--wide">
+        <span class="step__num">02 — Your character</span>
+        <h2 class="step__title">Take the casting test</h2>
+        <p class="step__text">
+          Five short questions to find the character who feels most natural for you to
+          step into. There are no right answers — it only takes a minute.
+        </p>
+        <a class="pbtn pbtn--dark" href="../quiz/">Find your character →</a>
+      </div>
+    </section>
+
+    <!-- 03 · AVAILABLE TIMES -->
+    <section class="step" id="times">
+      <div class="step__body step__body--wide">
+        <span class="step__num">03 — The night</span>
+        <h2 class="step__title">Find a game</h2>
+        <p class="step__text">Upcoming evenings and their open seats, updated live.</p>
+        <div class="times" id="times-list">
+          <!-- filled by start.js -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot__bottom">
+      <p>© <span id="year"></span> Odeum</p>
+      <p>A private theatre experience</p>
+    </div>
+  </footer>
+
+  <script src="start.js?v=1"></script>
+</body>
+</html>
