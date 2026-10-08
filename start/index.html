@@ -17,7 +17,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="../css/styles.css?v=17" />
-  <link rel="stylesheet" href="start.css?v=1" />
+  <link rel="stylesheet" href="start.css?v=2" />
 </head>
 <body class="prague start">
   <!-- NAV -->
@@ -50,7 +50,7 @@
           boundaries of what can finally be said — while someone at your table may be
           reporting what they hear. A private theatre game for six.
         </p>
-        <a class="pbtn pbtn--dark" href="../SIPbeta/">Read more about the game →</a>
+        <a class="pbtn pbtn--light" href="../SIPbeta/">Read more about the game →</a>
       </div>
     </section>
 
@@ -63,7 +63,7 @@
           Five short questions to find the character who feels most natural for you to
           step into. There are no right answers — it only takes a minute.
         </p>
-        <a class="pbtn pbtn--dark" href="../quiz/">Find your character →</a>
+        <a class="pbtn pbtn--light" href="../quiz/">Find your character →</a>
       </div>
     </section>
 
@@ -72,13 +72,60 @@
       <div class="step__body step__body--wide">
         <span class="step__num">03 — The night</span>
         <h2 class="step__title">Find a game</h2>
-        <p class="step__text">Upcoming evenings and their open seats, updated live.</p>
-        <div class="times" id="times-list">
-          <!-- filled by start.js -->
+        <p class="step__text">
+          Request a character on a date. It holds the seat as <em>pending</em>
+          while we confirm with you by email.
+        </p>
+        <div id="sessions" class="sessions" aria-live="polite">
+          <p class="sessions__loading">Loading availability…</p>
         </div>
       </div>
     </section>
   </main>
+
+  <!-- REQUEST MODAL -->
+  <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__card" role="document">
+      <button class="modal__close" data-close aria-label="Close">×</button>
+      <div id="modalForm">
+        <p class="modal__eyebrow">Request a seat</p>
+        <h3 class="modal__title" id="modalTitle">Milan</h3>
+        <p class="modal__slot" id="modalSlot">Saturday 26 September · 6–11 PM</p>
+        <form id="signupForm" novalidate>
+          <div class="pfield">
+            <label for="f-name">Full name</label>
+            <input type="text" id="f-name" name="name" autocomplete="name" required />
+          </div>
+          <div class="pfield pfield--row">
+            <div>
+              <label for="f-email">Email</label>
+              <input type="email" id="f-email" name="email" autocomplete="email" required />
+            </div>
+            <div>
+              <label for="f-age">Age</label>
+              <input type="number" id="f-age" name="age" min="16" max="120" inputmode="numeric" required />
+            </div>
+          </div>
+          <div class="pfield">
+            <label for="f-phone">Phone</label>
+            <input type="tel" id="f-phone" name="phone" autocomplete="tel" required />
+          </div>
+          <div class="pfield">
+            <label for="f-rec">Who told you about us?</label>
+            <input type="text" id="f-rec" name="recommendedBy" required />
+          </div>
+          <button type="submit" class="pbtn pbtn--dark" id="submitBtn">Send my request</button>
+          <p class="modal__status" id="modalStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div id="modalDone" class="modal__done" hidden>
+        <h3 class="modal__title">Request received.</h3>
+        <p id="doneMsg">Your seat is being held pending confirmation. We'll confirm by email and send more details soon.</p>
+        <button class="pbtn pbtn--dark" data-close>Close</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="foot">
     <div class="foot__bottom">
@@ -87,6 +134,6 @@
     </div>
   </footer>
 
-  <script src="start.js?v=1"></script>
+  <script src="start.js?v=2"></script>
 </body>
 </html>
