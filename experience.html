@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Odeum — a private theatre experience where you are the protagonist in a dramatic story. Intimate. Dramatic. Social." />
+  <meta name="theme-color" content="#f1ece2" />
+  <!-- Retired original homepage, kept for reference — not the main page, not indexed. -->
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Odeum — The Experience</title>
+
+  <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <link rel="canonical" href="https://www.odeumgames.com/experience.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Odeum" />
+  <meta property="og:title" content="Odeum — Intimate. Dramatic. Social." />
+  <meta property="og:description" content="A private theatre experience where you are the protagonist in a dramatic story. You're in the cast." />
+  <meta property="og:url" content="https://clysun.github.io/odeum/" />
+  <meta property="og:image" content="https://clysun.github.io/odeum/og.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Odeum — Intimate. Dramatic. Social." />
+  <meta name="twitter:description" content="A private theatre experience where you are the protagonist in a dramatic story. You're in the cast." />
+  <meta name="twitter:image" content="https://clysun.github.io/odeum/og.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/styles.css?v=27" />
+</head>
+<body>
+  <!-- NAV -->
+  <header class="nav" id="nav">
+    <nav class="nav__side nav__side--left" aria-label="Primary">
+      <button class="nav__menu" id="menuBtn" aria-expanded="false" aria-controls="overlay">
+        <span></span><span></span>
+      </button>
+      <a href="#experience" class="nav__link">The Experience</a>
+      <a href="#games" class="nav__link">The Games</a>
+      <a href="testimonials/" class="nav__link">Testimonials</a>
+    </nav>
+
+    <a href="#top" class="nav__brand" aria-label="Odeum home">ODEUM</a>
+
+    <div class="nav__side nav__side--right">
+    </div>
+  </header>
+
+  <!-- FULLSCREEN OVERLAY MENU -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <nav class="overlay__nav" aria-label="Overlay">
+      <a href="#experience">The Experience</a>
+      <a href="#games">The Games</a>
+      <a href="testimonials/">Testimonials</a>
+    </nav>
+    <p class="overlay__note">A private theatre experience.</p>
+  </div>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero" id="hero">
+      <div class="hero__panels">
+        <figure class="panel" style="--i:0">
+          <img src="images/mirror.webp" alt="Two guests in candlelight before a mirror" loading="eager" />
+        </figure>
+        <figure class="panel" style="--i:1">
+          <img src="images/dinner.jpg" alt="A candlelit table of guests reading their scripts" loading="eager" />
+        </figure>
+        <figure class="panel" style="--i:2">
+          <img src="images/wine.jpg" alt="Wine poured at an intimate evening" loading="eager" />
+        </figure>
+      </div>
+
+      <div class="hero__caption">
+        <p class="hero__eyebrow">Intimate · Dramatic · Social</p>
+        <a href="#statement" class="hero__scroll" aria-label="Scroll">
+          <span>Enter</span><span class="hero__scroll-line"></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- PLAYTEST INVITE -->
+    <a class="promo" href="SIPbeta/">
+      <span class="promo__lead">Be among the first to play —</span>
+      <span class="promo__cta">sign up for a test game →</span>
+    </a>
+
+    <!-- STATEMENT -->
+    <section class="statement" id="statement">
+      <p class="statement__lead reveal">
+        A private theatre experience where <em>you</em> are the protagonist
+        in a dramatic story.
+      </p>
+    </section>
+
+    <!-- FULL-BLEED FEATURE -->
+    <section class="feature" aria-label="An evening at Odeum">
+      <video class="feature__img" data-src="images/evening.mp4" muted loop playsinline preload="none" aria-label="Guests playing an evening at Odeum"></video>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section class="experience" id="experience">
+      <div class="experience__head">
+        <span class="kicker reveal">An evening with Odeum</span>
+        <h2 class="experience__title reveal">Think of private theatre crossed<br />with a social game like <em>Mafia</em>.</h2>
+      </div>
+      <div class="experience__cols experience__cols--single">
+        <div class="reveal">
+          <p>
+            The story is already waiting for you. You’ll read your character, make choices,
+            and watch the night change around your table.
+          </p>
+          <p>
+            You don’t need to know how to act. Our actors bring the scenes to life; you decide
+            where the story goes.
+          </p>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <ol class="timeline__list">
+          <li class="reveal">
+            <span class="timeline__tag">1. Arrival</span>
+            <h3 class="timeline__name">Meet your group.</h3>
+            <p>Come alone or with friends. Each table brings six players together for the evening.</p>
+          </li>
+          <li class="reveal">
+            <span class="timeline__tag">2. Narrative</span>
+            <h3 class="timeline__name">Read your story.</h3>
+            <p>Each player experiences the story from their own character’s point of view.</p>
+          </li>
+          <li class="reveal">
+            <span class="timeline__tag">3. Game</span>
+            <h3 class="timeline__name">Play it out.</h3>
+            <p>The story advances through social games built around trust, betrayal, alliances, and persuasion.</p>
+          </li>
+          <li class="reveal">
+            <span class="timeline__tag">4. Theatre</span>
+            <h3 class="timeline__name">The scene comes to you.</h3>
+            <p>Actors perform the story’s key scenes just an arm’s length away.</p>
+          </li>
+          <li class="reveal">
+            <span class="timeline__tag">5. Finale</span>
+            <h3 class="timeline__name">Your table writes the ending.</h3>
+            <p>Reading, play, and live performance deepen the story until your table faces the final choice.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- GAMES -->
+    <section class="evenings" id="games">
+      <div class="evenings__head">
+        <h2 class="evenings__title reveal">Now Playing</h2>
+        <p class="evenings__sub reveal">Live in New York City</p>
+      </div>
+
+      <a class="row row--link reveal" href="SIPbeta/">
+        <figure class="row__media">
+          <img src="images/prague/table-lamp.jpg" alt="Summertime in Prague — a cast of six around a lamplit table" loading="lazy" />
+          <figcaption class="row__badge row__badge--live">Beta testing in progress</figcaption>
+        </figure>
+        <div class="row__text">
+          <span class="row__index">Czechoslovakia, 1968</span>
+          <h3 class="row__name">Summertime in Prague</h3>
+          <p>In January 1968, Prague experiences its first loosening of censorship after twenty
+             years of Communist rule.</p>
+          <p>You are writers for a literary magazine, testing the boundaries of what can finally
+             be said. But every article carries a risk, and someone at your table may be
+             reporting what they hear.</p>
+          <span class="row__meta">Beta playtest · Reserve your seat →</span>
+        </div>
+      </a>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <div class="foot__top">
+      <div>
+        <a href="#top" class="foot__brand">ODEUM</a>
+        <p class="foot__def">(n.) an ancient Greek term for a small theatre</p>
+      </div>
+      <nav class="foot__links" aria-label="Footer">
+        <a href="#experience">The Experience</a>
+        <a href="#games">The Games</a>
+        <a href="testimonials/">Testimonials</a>
+        <a href="#" aria-label="Odeum on Instagram">Instagram</a>
+      </nav>
+    </div>
+    <div class="foot__bottom">
+      <p>© <span id="year"></span> Odeum</p>
+      <p>A private theatre experience</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js?v=6"></script>
+</body>
+</html>

@@ -2,36 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Odeum — a private theatre experience where you are the protagonist in a dramatic story. Intimate. Dramatic. Social." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Summertime in Prague — a private theatre game for six. Prague, 1968. Read your character, make choices, and watch the night change around your table. Reserve a seat." />
   <meta name="theme-color" content="#f1ece2" />
-  <title>Odeum</title>
+  <title>Odeum · Summertime in Prague</title>
 
   <link rel="icon" href="favicon.svg?v=2" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 
-  <!-- Social / SEO. If your live URL is not https://clysun.github.io/odeum,
-       update the four absolute URLs below (canonical, og:url, og:image, twitter:image). -->
-  <link rel="canonical" href="https://clysun.github.io/odeum/" />
+  <link rel="canonical" href="https://www.odeumgames.com/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Odeum" />
-  <meta property="og:title" content="Odeum — Intimate. Dramatic. Social." />
-  <meta property="og:description" content="A private theatre experience where you are the protagonist in a dramatic story. You're in the cast." />
-  <meta property="og:url" content="https://clysun.github.io/odeum/" />
-  <meta property="og:image" content="https://clysun.github.io/odeum/og.jpg" />
+  <meta property="og:title" content="Odeum · Summertime in Prague" />
+  <meta property="og:description" content="A private theatre game for six. Prague, 1968 — you are the protagonist in a dramatic story. Reserve a seat." />
+  <meta property="og:url" content="https://www.odeumgames.com/" />
+  <meta property="og:image" content="https://www.odeumgames.com/og.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Odeum — Intimate. Dramatic. Social." />
-  <meta name="twitter:description" content="A private theatre experience where you are the protagonist in a dramatic story. You're in the cast." />
-  <meta name="twitter:image" content="https://clysun.github.io/odeum/og.jpg" />
+  <meta name="twitter:title" content="Odeum · Summertime in Prague" />
+  <meta name="twitter:description" content="A private theatre game for six. Prague, 1968 — you are the protagonist. Reserve a seat." />
+  <meta name="twitter:image" content="https://www.odeumgames.com/og.jpg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/styles.css?v=17" />
+  <link rel="stylesheet" href="css/styles.css?v=27" />
 </head>
 <body>
   <!-- NAV -->
@@ -40,145 +38,279 @@
       <button class="nav__menu" id="menuBtn" aria-expanded="false" aria-controls="overlay">
         <span></span><span></span>
       </button>
-      <a href="#experience" class="nav__link">The Experience</a>
-      <a href="#games" class="nav__link">The Games</a>
-      <a href="testimonials/" class="nav__link">Testimonials</a>
+      <a href="#how" class="nav__link">How it works</a>
+      <a href="#prague" class="nav__link">The story</a>
+      <a href="#cast" class="nav__link">The cast</a>
     </nav>
 
     <a href="#top" class="nav__brand" aria-label="Odeum home">ODEUM</a>
 
     <div class="nav__side nav__side--right">
+      <a href="#signup" class="nav__cta">Sign up</a>
     </div>
   </header>
 
   <!-- FULLSCREEN OVERLAY MENU -->
   <div class="overlay" id="overlay" aria-hidden="true">
     <nav class="overlay__nav" aria-label="Overlay">
-      <a href="#experience">The Experience</a>
-      <a href="#games">The Games</a>
+      <a href="#how">How it works</a>
+      <a href="#prague">The story</a>
+      <a href="#cast">The cast</a>
+      <a href="#signup">Sign up</a>
       <a href="testimonials/">Testimonials</a>
     </nav>
     <p class="overlay__note">A private theatre experience.</p>
   </div>
 
   <main id="top">
-    <!-- HERO -->
-    <section class="hero" id="hero">
-      <div class="hero__panels">
-        <figure class="panel" style="--i:0">
-          <img src="images/mirror.webp" alt="Two guests in candlelight before a mirror" loading="eager" />
-        </figure>
-        <figure class="panel" style="--i:1">
-          <img src="images/dinner.jpg" alt="A candlelit table of guests reading their scripts" loading="eager" />
-        </figure>
-        <figure class="panel" style="--i:2">
-          <img src="images/wine.jpg" alt="Wine poured at an intimate evening" loading="eager" />
-        </figure>
-      </div>
-
+    <!-- HERO (full-bleed) -->
+    <section class="hero hero--full" id="hero">
+      <img class="hero__img" src="images/prague/table-lamp.jpg" alt="A cast of six around a lamplit table in character" />
+      <div class="hero__scrim"></div>
       <div class="hero__caption">
-        <p class="hero__eyebrow">Intimate · Dramatic · Social</p>
-        <a href="#statement" class="hero__scroll" aria-label="Scroll">
-          <span>Enter</span><span class="hero__scroll-line"></span>
-        </a>
+        <h1 class="hero__headline">A private theatre experience</h1>
+        <div class="hero__cta">
+          <a href="#signup" class="hbtn hbtn--accent">Reserve your seat →</a>
+          <a href="#how" class="hbtn hbtn--ghost">How it works</a>
+        </div>
       </div>
     </section>
 
-    <!-- PLAYTEST INVITE -->
-    <a class="promo" href="SIPbeta/">
-      <span class="promo__lead">Be among the first to play —</span>
-      <span class="promo__cta">sign up for a test game →</span>
-    </a>
-
-    <!-- STATEMENT -->
-    <section class="statement" id="statement">
-      <p class="statement__lead reveal">
-        A private theatre experience where <em>you</em> are the protagonist
-        in a dramatic story.
-      </p>
+    <!-- TEXT (below the header) -->
+    <section class="statement" id="about">
+      <p class="statement__lead reveal">Think of private theatre crossed with a social game like <em>Mafia</em> — for six friends and strangers.</p>
     </section>
 
-    <!-- FULL-BLEED FEATURE -->
+    <!-- HOW IT WORKS — pinned: viewport holds still, timeline + photo advance as you scroll -->
+    <section class="flow" id="how" aria-label="How the game works">
+      <div class="flow__scroller" id="flowScroller">
+        <div class="flow__sticky">
+          <div class="flow__photos" aria-hidden="true">
+            <img class="flow__photo is-active" src="images/prague/the-room.jpg" alt="" />
+            <img class="flow__photo" src="images/prague/scripts.jpg" alt="" />
+            <img class="flow__photo" src="images/prague/huddle.jpg" alt="" />
+            <img class="flow__photo" src="images/prague/confrontation.jpg" alt="" style="object-position: 35% center;" />
+            <img class="flow__photo" src="images/prague/table-lamp.jpg" alt="" />
+          </div>
+          <div class="flow__scrim"></div>
+          <div class="flow__inner">
+            <div class="flow__head"><span class="kicker">How the game works</span></div>
+            <ol class="flow__timeline" id="flowTimeline">
+              <span class="flow__spine" aria-hidden="true"><span class="flow__spinefill" id="flowFill"></span></span>
+              <li class="flow__tick is-active"><span class="flow__dot"></span><span class="flow__tlabel">Arrival</span></li>
+              <li class="flow__tick"><span class="flow__dot"></span><span class="flow__tlabel">Narrative</span></li>
+              <li class="flow__tick"><span class="flow__dot"></span><span class="flow__tlabel">Game</span></li>
+              <li class="flow__tick"><span class="flow__dot"></span><span class="flow__tlabel">Theatre</span></li>
+              <li class="flow__tick"><span class="flow__dot"></span><span class="flow__tlabel">Finale</span></li>
+            </ol>
+            <div class="flow__captions" id="flowCaptions">
+              <div class="flow__cap is-active">
+                <h3 class="flow__name">Meet your group.</h3>
+                <p>Come alone or with friends. Each table brings six players together for the evening.</p>
+              </div>
+              <div class="flow__cap">
+                <h3 class="flow__name">Read your story.</h3>
+                <p>Each player experiences the story from their own character’s point of view, chapter by chapter.</p>
+              </div>
+              <div class="flow__cap">
+                <h3 class="flow__name">Play it out.</h3>
+                <p>The story advances through social games built around trust, betrayal, alliances, and persuasion.</p>
+              </div>
+              <div class="flow__cap">
+                <h3 class="flow__name">The scene comes to you.</h3>
+                <p>Actors perform the story’s key scenes just an arm’s length away.</p>
+              </div>
+              <div class="flow__cap">
+                <h3 class="flow__name">Your table writes the ending.</h3>
+                <p>Reading, play, and live performance deepen the story until your table faces the final choice.</p>
+              </div>
+            </div>
+            <span class="flow__hint" aria-hidden="true">Scroll ↓</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOW PLAYING (own section) -->
+    <section class="nowplaying" id="prague">
+      <span class="kicker reveal">Now Playing</span>
+      <h2 class="nowplaying__title reveal">Summertime in Prague</h2>
+      <p class="nowplaying__sub reveal">Czechoslovakia, 1968</p>
+    </section>
+
+    <!-- STORY -->
+    <section class="sstory">
+      <div class="sstory__grid">
+        <div class="reveal">
+          <h3 class="sstory__lead">You are a writer, and Prague is awakening.</h3>
+        </div>
+        <div class="sstory__body reveal">
+          <p>In January 1968, after twenty years of Communist rule, censorship began to loosen in
+             Czechoslovakia. The country welcomed a new spring as Communist Party leader Alexander
+             Dubček announced a program of reform he called “socialism with a human face.”</p>
+          <p>You are writers for <em>Dialog</em>, an influential literary magazine, pushing the
+             boundaries of what can finally be published. But every article still carries a risk,
+             and it is becoming more critical than ever to tell friend from foe.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAST -->
+    <section class="scast" id="cast">
+      <div class="scast__head">
+        <span class="kicker reveal">The cast</span>
+        <h2 class="scast__title reveal">Six characters. Choose your own.</h2>
+        <p class="scast__sub reveal">Not sure who to play? Take the quick character-fit quiz and we’ll suggest a match.</p>
+        <a class="hbtn hbtn--dark scast__quiz reveal" href="quiz/">Take the character-fit quiz →</a>
+      </div>
+      <div class="scast__grid">
+        <article class="scard reveal">
+          <div class="scard__art"><img src="images/prague/cast/eva.jpg" alt="Portrait of Eva" loading="lazy" /></div>
+          <h3 class="scard__name">Eva</h3>
+          <p class="scard__line">Writes art and culture critiques. Speaks three languages. Is there anything she can’t do?</p>
+        </article>
+        <article class="scard reveal">
+          <div class="scard__art"><img src="images/prague/cast/vaclav.jpg" alt="Portrait of Vaclav" loading="lazy" /></div>
+          <h3 class="scard__name">Vaclav</h3>
+          <p class="scard__line">Writes poetry. Full of charm. The world is a bit dreamier in his eyes.</p>
+        </article>
+        <article class="scard reveal">
+          <div class="scard__art"><img src="images/prague/cast/milan.jpg" alt="Portrait of Milan" loading="lazy" /></div>
+          <h3 class="scard__name">Milan</h3>
+          <p class="scard__line">Writes absurdist stories. Loves wandering around cemeteries at the outskirts of the city.</p>
+        </article>
+        <article class="scard reveal">
+          <div class="scard__art"><img src="images/prague/cast/vera.jpg" alt="Portrait of Vera" loading="lazy" /></div>
+          <h3 class="scard__name">Vera</h3>
+          <p class="scard__line">Writes about Prague’s rock music scene. A drummer. Might seem hard to approach at first.</p>
+        </article>
+        <article class="scard reveal">
+          <div class="scard__art"><img src="images/prague/cast/tomas.jpg" alt="Portrait of Tomas" loading="lazy" /></div>
+          <h3 class="scard__name">Tomas</h3>
+          <p class="scard__line">Manages the academic analysis section. A literature teacher who sneaks his students banned books.</p>
+        </article>
+        <article class="scard reveal">
+          <div class="scard__art"><img src="images/prague/cast/petra.jpg" alt="Portrait of Petra" loading="lazy" /></div>
+          <h3 class="scard__name">Petra</h3>
+          <p class="scard__line">Manages the theatre section. Director of her own theatre. “Small but mighty,” says her troupe.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- SIGN UP (dark band) -->
+    <section class="signup" id="signup">
+      <div class="signup__head">
+        <span class="kicker reveal">Reserve a seat</span>
+        <h2 class="signup__title reveal">Pick a date &amp; your character</h2>
+        <p class="signup__sub reveal">Choose an open character on a date and send a request. It holds the seat as
+          <em>pending</em> while we confirm with you by email — no payment needed to request.</p>
+      </div>
+      <div id="sessions" class="sessions" aria-live="polite">
+        <p class="sessions__loading">Loading availability…</p>
+      </div>
+    </section>
+
+    <!-- FULL-BLEED FEATURE VIDEO -->
     <section class="feature" aria-label="An evening at Odeum">
       <video class="feature__img" data-src="images/evening.mp4" muted loop playsinline preload="none" aria-label="Guests playing an evening at Odeum"></video>
     </section>
 
-    <!-- EXPERIENCE -->
-    <section class="experience" id="experience">
-      <div class="experience__head">
-        <span class="kicker reveal">An evening with Odeum</span>
-        <h2 class="experience__title reveal">Think of private theatre crossed<br />with a social game like <em>Mafia</em>.</h2>
-      </div>
-      <div class="experience__cols experience__cols--single">
-        <div class="reveal">
-          <p>
-            The story is already waiting for you. You’ll read your character, make choices,
-            and watch the night change around your table.
-          </p>
-          <p>
-            You don’t need to know how to act. Our actors bring the scenes to life; you decide
-            where the story goes.
-          </p>
-        </div>
-      </div>
-
-      <div class="timeline">
-        <ol class="timeline__list">
-          <li class="reveal">
-            <span class="timeline__tag">1. Arrival</span>
-            <h3 class="timeline__name">Meet your group.</h3>
-            <p>Come alone or with friends. Each table brings six players together for the evening.</p>
-          </li>
-          <li class="reveal">
-            <span class="timeline__tag">2. Narrative</span>
-            <h3 class="timeline__name">Read your story.</h3>
-            <p>Each player experiences the story from their own character’s point of view.</p>
-          </li>
-          <li class="reveal">
-            <span class="timeline__tag">3. Game</span>
-            <h3 class="timeline__name">Play it out.</h3>
-            <p>The story advances through social games built around trust, betrayal, alliances, and persuasion.</p>
-          </li>
-          <li class="reveal">
-            <span class="timeline__tag">4. Theatre</span>
-            <h3 class="timeline__name">The scene comes to you.</h3>
-            <p>Actors perform the story’s key scenes just an arm’s length away.</p>
-          </li>
-          <li class="reveal">
-            <span class="timeline__tag">5. Finale</span>
-            <h3 class="timeline__name">Your table writes the ending.</h3>
-            <p>Reading, play, and live performance deepen the story until your table faces the final choice.</p>
-          </li>
-        </ol>
-      </div>
+    <!-- GOOD TO KNOW -->
+    <section class="sknow" id="know">
+      <span class="kicker reveal">Good to know</span>
+      <ul class="sknow__list">
+        <li class="reveal">
+          <h3>It’s not about acting</h3>
+          <p>No pressure to perform. You’re simply here to understand your character’s motivations and make the choices they would.</p>
+        </li>
+        <li class="reveal">
+          <h3>A full evening, 6–11 PM</h3>
+          <p>Four hours of game, plus an hour of setup and debrief. Light snacks and refreshments provided — please come after dinner.</p>
+        </li>
+        <li class="reveal">
+          <h3>Come alone or with friends</h3>
+          <p>Partners are welcome to sign up together, but the game is also designed for strangers to meet and connect through a shared story.</p>
+        </li>
+        <li class="reveal">
+          <h3>Beta playtest note</h3>
+          <p>We photograph and film as unobtrusively as possible. By signing up you consent to appearing in future marketing materials. Thank you for helping us make this happen!</p>
+        </li>
+      </ul>
     </section>
 
-    <!-- GAMES -->
-    <section class="evenings" id="games">
-      <div class="evenings__head">
-        <h2 class="evenings__title reveal">Now Playing</h2>
-        <p class="evenings__sub reveal">Live in New York City</p>
+    <!-- FAQ -->
+    <section class="sfaq" id="faq">
+      <h2 class="sfaq__title reveal">Common questions</h2>
+      <div class="sfaq__list reveal">
+        <details class="qa">
+          <summary>How do I sign up?</summary>
+          <div class="qa__body">
+            <p>Scroll to <a href="#signup">Reserve a seat</a>, pick an open character on a date, and send a short request
+               (name, email, phone). We’ll hold the seat as pending and confirm with you by email.</p>
+          </div>
+        </details>
+        <details class="qa">
+          <summary>Do I need to sign up with a partner?</summary>
+          <div class="qa__body">
+            <p>No need! While we value partners signing up together so they can enjoy the story as a pair, the game is
+               also designed for strangers to meet and connect through a shared story.</p>
+          </div>
+        </details>
+        <details class="qa">
+          <summary>What is your cancellation policy?</summary>
+          <div class="qa__body">
+            <p>We completely understand that things come up. The game requires all six players, so please let us know as
+               soon as possible if you can no longer attend. Five days before the game we send a final confirmation email
+               to double-check that everyone is still available.</p>
+          </div>
+        </details>
       </div>
-
-      <a class="row row--link reveal" href="SIPbeta/">
-        <figure class="row__media">
-          <img src="images/prague/table-lamp.jpg" alt="Summertime in Prague — a cast of six around a lamplit table" loading="lazy" />
-          <figcaption class="row__badge row__badge--live">Beta testing in progress</figcaption>
-        </figure>
-        <div class="row__text">
-          <span class="row__index">Czechoslovakia, 1968</span>
-          <h3 class="row__name">Summertime in Prague</h3>
-          <p>In January 1968, Prague experiences its first loosening of censorship after twenty
-             years of Communist rule.</p>
-          <p>You are writers for a literary magazine, testing the boundaries of what can finally
-             be said. But every article carries a risk, and someone at your table may be
-             reporting what they hear.</p>
-          <span class="row__meta">Beta playtest · Reserve your seat →</span>
-        </div>
-      </a>
     </section>
-
   </main>
+
+  <!-- REQUEST MODAL -->
+  <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__card" role="document">
+      <button class="modal__close" data-close aria-label="Close">×</button>
+      <div id="modalForm">
+        <p class="modal__eyebrow">Request a seat</p>
+        <h3 class="modal__title" id="modalTitle">Milan</h3>
+        <p class="modal__slot" id="modalSlot">Saturday 26 September · 6–11 PM</p>
+        <form id="signupForm" novalidate>
+          <div class="pfield">
+            <label for="f-name">Full name</label>
+            <input type="text" id="f-name" name="name" autocomplete="name" required />
+          </div>
+          <div class="pfield pfield--row">
+            <div>
+              <label for="f-email">Email</label>
+              <input type="email" id="f-email" name="email" autocomplete="email" required />
+            </div>
+            <div>
+              <label for="f-age">Age</label>
+              <input type="number" id="f-age" name="age" min="16" max="120" inputmode="numeric" required />
+            </div>
+          </div>
+          <div class="pfield">
+            <label for="f-phone">Phone</label>
+            <input type="tel" id="f-phone" name="phone" autocomplete="tel" required />
+          </div>
+          <div class="pfield">
+            <label for="f-rec">Who told you about us?</label>
+            <input type="text" id="f-rec" name="recommendedBy" required />
+          </div>
+          <button type="submit" class="pbtn pbtn--dark" id="submitBtn">Send my request</button>
+          <p class="modal__status" id="modalStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+      <div id="modalDone" class="modal__done" hidden>
+        <h3 class="modal__title">Request received.</h3>
+        <p id="doneMsg">Your seat is being held pending confirmation. We'll confirm by email and send more details soon.</p>
+        <button class="pbtn pbtn--dark" data-close>Close</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="foot">
     <div class="foot__top">
@@ -187,8 +319,10 @@
         <p class="foot__def">(n.) an ancient Greek term for a small theatre</p>
       </div>
       <nav class="foot__links" aria-label="Footer">
-        <a href="#experience">The Experience</a>
-        <a href="#games">The Games</a>
+        <a href="#how">How it works</a>
+        <a href="#prague">The story</a>
+        <a href="#cast">The cast</a>
+        <a href="#signup">Sign up</a>
         <a href="testimonials/">Testimonials</a>
         <a href="#" aria-label="Odeum on Instagram">Instagram</a>
       </nav>
@@ -200,5 +334,7 @@
   </footer>
 
   <script src="js/main.js?v=6"></script>
+  <script src="js/flow.js?v=4"></script>
+  <script src="js/signup.js?v=1"></script>
 </body>
 </html>
