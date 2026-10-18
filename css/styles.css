@@ -839,6 +839,8 @@ body.is-leaving { background: var(--ink); transition: background 0.5s ease; }
 .hero--full .hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hero--full .hero__scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,11,8,0.45) 0%, transparent 30%, transparent 46%, rgba(15,11,8,0.86) 100%); }
 /* caption uses the base absolute bottom-bar style (eyebrow left · "Reserve a seat" right) */
+/* Hero statement grows a touch on larger / full-screen viewports */
+.hero--full .hero__eyebrow { font-size: clamp(0.72rem, 1vw, 1.05rem); }
 
 /* ---------- HOW IT WORKS — pinned scroll ---------- */
 .flow__scroller { position: relative; height: 380vh; }
