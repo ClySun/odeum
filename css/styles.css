@@ -646,11 +646,6 @@ body.is-leaving { background: var(--ink); transition: background 0.5s ease; }
 .nav.is-solid .nav__cta { opacity: 1; transform: none; pointer-events: auto; }
 .nav__cta:hover { background: var(--wine); border-color: var(--wine); color: #f1ece2; }
 
-/* Hero caption → stacked, with headline + CTAs (new homepage only) */
-.hero--full .hero__caption {
-  flex-direction: column; align-items: flex-start; justify-content: flex-end;
-  gap: 0.9rem; padding-bottom: clamp(2rem, 6vh, 3.6rem); max-width: 960px;
-}
 .hero__headline {
   pointer-events: auto; font-family: var(--serif); font-weight: 300;
   font-size: clamp(1.8rem, 3.8vw, 3.1rem); line-height: 1.08; letter-spacing: -0.005em;
@@ -842,8 +837,7 @@ body.is-leaving { background: var(--ink); transition: background 0.5s ease; }
 .hero--full { position: relative; height: 100svh; min-height: 600px; overflow: hidden; display: flex; align-items: flex-end; }
 .hero--full .hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .hero--full .hero__scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,11,8,0.45) 0%, transparent 30%, transparent 46%, rgba(15,11,8,0.86) 100%); }
-.hero--full .hero__caption { position: relative; inset: auto; z-index: 3; }
-.hero--full .hero__headline { max-width: 20ch; }
+/* caption uses the base absolute bottom-bar style (eyebrow left · "Reserve a seat" right) */
 
 /* ---------- HOW IT WORKS — pinned scroll ---------- */
 .flow__scroller { position: relative; height: 380vh; }
