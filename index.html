@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/styles.css?v=36" />
+  <link rel="stylesheet" href="css/styles.css?v=37" />
 </head>
 <body>
   <!-- NAV -->
@@ -160,7 +160,13 @@
         <span class="kicker reveal">The cast</span>
         <h2 class="scast__title reveal">Six characters. Choose your own.</h2>
         <p class="scast__sub reveal">Not sure who to play? Take the quick character-fit quiz and we’ll suggest a match.</p>
-        <a class="hbtn hbtn--dark scast__quiz reveal" href="quiz/">Take the character-fit quiz →</a>
+        <div class="scast__quizrow reveal">
+          <a class="hbtn hbtn--dark scast__quiz" href="quiz/">Take the character-fit quiz →</a>
+          <a class="scast__qr" href="quiz/" aria-label="Scan or tap to take the character-fit quiz">
+            <img src="images/quiz-qr.png" alt="QR code to the character-fit quiz" width="140" height="140" loading="lazy" />
+            <span class="scast__qrcap">Scan to take it</span>
+          </a>
+        </div>
       </div>
       <div class="scast__couples">
         <div class="scouple reveal">
