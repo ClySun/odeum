@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/styles.css?v=32" />
+  <link rel="stylesheet" href="css/styles.css?v=36" />
 </head>
 <body>
   <!-- NAV -->
@@ -211,13 +211,43 @@
       </div>
     </section>
 
+    <!-- TESTIMONIALS — one full quote at a time, rolling in after another -->
+    <section class="quotes" id="quotes" aria-label="What players say">
+      <span class="quotes__mark" aria-hidden="true">“</span>
+      <button class="quotes__arrow quotes__arrow--prev" id="quotesPrev" type="button" aria-label="Previous quote">‹</button>
+      <div class="quotes__viewport" id="quotesViewport">
+        <blockquote class="quotes__item">
+          <p class="quotes__text">“…the story completely engulfed me.”</p>
+          <cite class="quotes__who">Ankith <span>· played Tomas</span></cite>
+        </blockquote>
+        <blockquote class="quotes__item">
+          <p class="quotes__text">“It’s like imaginative play for adults.”</p>
+          <cite class="quotes__who">Samantha <span>· played Eva</span></cite>
+        </blockquote>
+        <blockquote class="quotes__item">
+          <p class="quotes__text">“The beginning felt like a great way to break the ice and get comfortable with each other … it established a feeling of permission to take the game seriously.”</p>
+          <cite class="quotes__who">True <span>· played Milan</span></cite>
+        </blockquote>
+        <blockquote class="quotes__item">
+          <p class="quotes__text">“Super fun, very rich and immersive story that made it easy to lose yourself in the characters…”</p>
+          <cite class="quotes__who">Christian <span>· played Tomas</span></cite>
+        </blockquote>
+        <blockquote class="quotes__item">
+          <p class="quotes__text">“It’s like an immersive movie where your decisions have consequences!”</p>
+          <cite class="quotes__who">Rolando <span>· played Milan</span></cite>
+        </blockquote>
+      </div>
+      <button class="quotes__arrow quotes__arrow--next" id="quotesNext" type="button" aria-label="Next quote">›</button>
+      <div class="quotes__dots" id="quotesDots" aria-hidden="true"></div>
+    </section>
+
     <!-- SIGN UP (dark band) -->
     <section class="signup" id="signup">
       <div class="signup__head">
         <span class="kicker reveal">Reserve a seat</span>
         <h2 class="signup__title reveal">Pick a date &amp; your character</h2>
         <p class="signup__sub reveal">Choose an open character on a date and send a request. It holds the seat as
-          <em>pending</em> while we confirm with you by email — no payment needed to request.</p>
+          <em>pending</em> while we confirm with you by email.</p>
       </div>
       <div id="sessions" class="sessions" aria-live="polite">
         <p class="sessions__loading">Loading availability…</p>
@@ -349,6 +379,7 @@
 
   <script src="js/main.js?v=6"></script>
   <script src="js/flow.js?v=4"></script>
+  <script src="js/quotes.js?v=2"></script>
   <script src="js/signup.js?v=1"></script>
 </body>
 </html>
