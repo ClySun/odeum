@@ -22,13 +22,16 @@
     { id: "petra",  name: "Petra" }
   ];
 
+  // Games are split into Upcoming / Past automatically by today's date:
+  // a game stays "upcoming" through its own date and becomes "past" the next day.
   var SESSIONS = [
     { id: "2026-09-26", date: "Saturday 26 September 2026", time: "6:00–11:00 PM", place: "Upper West Side", full: true },
     { id: "2026-10-01", date: "Thursday 1 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side", full: true },
     { id: "2026-10-17", date: "Saturday 17 October 2026",   time: "6:00–11:00 PM", place: "Upper West Side", full: true },
-    { id: "2026-11-03", date: "Tuesday 3 November 2026",    time: "6:00–11:00 PM", place: "Upper West Side" },
+    { id: "2026-11-03", date: "Tuesday 3 November 2026",    time: "6:00–11:00 PM", place: "Upper West Side", full: true },
     { id: "2026-11-20", date: "Friday 20 November 2026",    time: "6:00–11:00 PM", place: "Upper West Side" },
-    { id: "2026-11-21", date: "Saturday 21 November 2026",  time: "6:00–11:00 PM", place: "Upper West Side" }
+    { id: "2026-11-21", date: "Saturday 21 November 2026",  time: "6:00–11:00 PM", place: "Upper West Side" },
+    { id: "2026-12-11", date: "Friday 11 December 2026",    time: "6:00–11:00 PM", place: "Upper West Side" }
   ];
 
   var statusMap = {};
@@ -55,6 +58,102 @@
     return (String(st).toLowerCase() === "confirmed") ? "taken" : "pending";
   };
 
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+  function byDate(a, b) { return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0); }
+  function openSeats(s) {
+    return s.full ? 0 : CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
+  }
+
+  function newGroup(title) {
+    var block = document.createElement("div");
+    block.className = "sessions__block";
+    var h = document.createElement("h3");
+    h.className = "sessions__group";
+    h.textContent = title;
+    var list = document.createElement("div");
+    list.className = "sessions__list";
+    block.appendChild(h);
+    block.appendChild(list);
+    sessionsEl.appendChild(block);
+    return list;
+  }
+
+  // An upcoming game: the full character grid + request buttons.
+  function renderBooking(s, loading, listEl) {
+    var card = document.createElement("div");
+    var openCount = openSeats(s);
+    var full = !loading && openCount === 0;
+    card.className = "session" + (full ? " session--full" + (expanded[s.id] ? " is-open" : "") : "");
+
+    var count = loading
+      ? "Checking…"
+      : (full ? "Fully booked" : openCount + " of " + CHARACTERS.length + " seats open");
+
+    var head = document.createElement(full ? "button" : "div");
+    head.className = "session__head";
+    if (full) {
+      head.type = "button";
+      head.setAttribute("aria-expanded", expanded[s.id] ? "true" : "false");
+      head.addEventListener("click", function () {
+        expanded[s.id] = !expanded[s.id];
+        card.classList.toggle("is-open", expanded[s.id]);
+        head.setAttribute("aria-expanded", expanded[s.id] ? "true" : "false");
+      });
+    }
+    head.innerHTML =
+      '<div><div class="session__date">' + s.date + "</div>" +
+      '<div class="session__meta">' + s.time + " · " + s.place + "</div></div>" +
+      '<div class="session__count">' + count + (full ? '<span class="session__chev" aria-hidden="true"></span>' : "") + "</div>";
+    card.appendChild(head);
+
+    var slots = document.createElement("div");
+    slots.className = "slots";
+    CHARACTERS.forEach(function (c) {
+      var slot = document.createElement("div");
+      if (loading) {
+        slot.className = "slot slot--loading";
+        slot.innerHTML =
+          '<div class="slot__name">' + c.name + "</div>" +
+          '<div class="slot__row"><span class="slot__state">Checking…</span></div>';
+        slots.appendChild(slot);
+        return;
+      }
+      var st = s.full ? "taken" : stateOf(slotId(s, c));
+      slot.className = "slot slot--" + st;
+      var label = st === "open" ? "Open" : (st === "pending" ? "Pending" : "Taken");
+      var btn = st === "open"
+        ? '<button class="slot__btn" type="button">Request →</button>'
+        : '<button class="slot__btn" disabled>' + label + "</button>";
+      slot.innerHTML =
+        '<div class="slot__name">' + c.name + "</div>" +
+        '<div class="slot__row"><span class="slot__state">' + label + "</span>" + btn + "</div>";
+      if (st === "open") {
+        slot.querySelector(".slot__btn").addEventListener("click", function () { openModal(s, c); });
+      }
+      slots.appendChild(slot);
+    });
+    card.appendChild(slots);
+    listEl.appendChild(card);
+  }
+
+  // A past game: a muted one-line entry, no booking.
+  function renderPast(s, listEl) {
+    var row = document.createElement("div");
+    row.className = "session session--past";
+    row.innerHTML =
+      '<div class="session__head">' +
+        '<div><div class="session__date">' + s.date + "</div>" +
+        '<div class="session__meta">' + s.time + " · " + s.place + "</div></div>" +
+        '<div class="session__count">Fully booked</div>' +
+      "</div>";
+    listEl.appendChild(row);
+  }
+
   function render(loading) {
     sessionsEl.innerHTML = "";
 
@@ -65,76 +164,34 @@
       sessionsEl.appendChild(err);
     }
 
+    var today = todayISO();
+    var upcoming = SESSIONS.filter(function (s) { return s.id >= today; }).sort(byDate);         // soonest first
+    var past = SESSIONS.filter(function (s) { return s.id < today; }).sort(byDate);               // chronological
+
+    // ----- Upcoming -----
+    var upList = newGroup("Upcoming games");
     if (loading) {
       var bar = document.createElement("div");
       bar.className = "avail-bar";
       bar.innerHTML =
         '<span class="avail-bar__label">Checking live availability…</span>' +
         '<span class="avail-bar__track"><span></span></span>';
-      sessionsEl.appendChild(bar);
+      upList.appendChild(bar);
+      upcoming.forEach(function (s) { renderBooking(s, true, upList); });
+    } else if (!upcoming.length) {
+      var none = document.createElement("p");
+      none.className = "sessions__loading";
+      none.textContent = "No upcoming games right now — check back soon.";
+      upList.appendChild(none);
+    } else {
+      upcoming.forEach(function (s) { renderBooking(s, false, upList); });
     }
 
-    function openSeats(s) {
-      return s.full ? 0 : CHARACTERS.filter(function (c) { return stateOf(slotId(s, c)) === "open"; }).length;
+    // ----- Past -----
+    if (past.length) {
+      var pastList = newGroup("Past games");
+      past.forEach(function (s) { renderPast(s, pastList); });
     }
-    var ordered = loading ? SESSIONS.filter(function (s) { return !s.full; }) : SESSIONS;
-
-    ordered.forEach(function (s) {
-      var card = document.createElement("div");
-      var openCount = openSeats(s);
-      var full = !loading && openCount === 0;
-      card.className = "session" + (full ? " session--full" + (expanded[s.id] ? " is-open" : "") : "");
-
-      var count = loading
-        ? "Checking…"
-        : (full ? "Fully booked" : openCount + " of " + CHARACTERS.length + " seats open");
-
-      var head = document.createElement(full ? "button" : "div");
-      head.className = "session__head";
-      if (full) {
-        head.type = "button";
-        head.setAttribute("aria-expanded", expanded[s.id] ? "true" : "false");
-        head.addEventListener("click", function () {
-          expanded[s.id] = !expanded[s.id];
-          card.classList.toggle("is-open", expanded[s.id]);
-          head.setAttribute("aria-expanded", expanded[s.id] ? "true" : "false");
-        });
-      }
-      head.innerHTML =
-        '<div><div class="session__date">' + s.date + "</div>" +
-        '<div class="session__meta">' + s.time + " · " + s.place + "</div></div>" +
-        '<div class="session__count">' + count + (full ? '<span class="session__chev" aria-hidden="true"></span>' : "") + "</div>";
-      card.appendChild(head);
-
-      var slots = document.createElement("div");
-      slots.className = "slots";
-      CHARACTERS.forEach(function (c) {
-        var slot = document.createElement("div");
-        if (loading) {
-          slot.className = "slot slot--loading";
-          slot.innerHTML =
-            '<div class="slot__name">' + c.name + "</div>" +
-            '<div class="slot__row"><span class="slot__state">Checking…</span></div>';
-          slots.appendChild(slot);
-          return;
-        }
-        var st = s.full ? "taken" : stateOf(slotId(s, c));
-        slot.className = "slot slot--" + st;
-        var label = st === "open" ? "Open" : (st === "pending" ? "Pending" : "Taken");
-        var btn = st === "open"
-          ? '<button class="slot__btn" type="button">Request →</button>'
-          : '<button class="slot__btn" disabled>' + label + "</button>";
-        slot.innerHTML =
-          '<div class="slot__name">' + c.name + "</div>" +
-          '<div class="slot__row"><span class="slot__state">' + label + "</span>" + btn + "</div>";
-        if (st === "open") {
-          slot.querySelector(".slot__btn").addEventListener("click", function () { openModal(s, c); });
-        }
-        slots.appendChild(slot);
-      });
-      card.appendChild(slots);
-      sessionsEl.appendChild(card);
-    });
   }
 
   function fetchAvailability(attempt) {

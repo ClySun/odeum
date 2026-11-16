@@ -731,7 +731,14 @@ body.is-leaving { background: var(--ink); transition: background 0.5s ease; }
 .signup__sub { color: rgba(241,236,226,0.72); max-width: 54ch; font-size: clamp(1rem, 1.3vw, 1.12rem); line-height: 1.55; }
 .signup__sub em { font-style: italic; color: #d8b877; }
 
-.sessions { max-width: 1100px; margin: 0 auto; display: grid; gap: 2.5rem; }
+.sessions { max-width: 1100px; margin: 0 auto; }
+.sessions__block + .sessions__block { margin-top: clamp(2.6rem, 7vh, 4.5rem); }
+.sessions__group { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(241,236,226,0.58); margin: 0 0 1.3rem; }
+.sessions__list { display: grid; gap: 1.5rem; }
+.session--past { opacity: 0.55; padding-top: 1.1rem; padding-bottom: 1.1rem; background: none; border-color: rgba(241,236,226,0.1); }
+.session--past .session__head { margin-bottom: 0; }
+.session--past .session__date { font-size: clamp(1.05rem, 1.8vw, 1.3rem); color: rgba(241,236,226,0.62); }
+.session--past .session__count { color: rgba(241,236,226,0.4); }
 .sessions__loading { color: rgba(241,236,226,0.6); }
 .avail-error { margin-bottom: 1.25rem; padding: 0.85rem 1.1rem; border: 1px solid rgba(216,184,119,0.4); border-radius: 10px; background: rgba(216,184,119,0.08); color: #e6c98a; font-size: 0.88rem; }
 .avail-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; }
