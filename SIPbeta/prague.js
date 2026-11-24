@@ -40,7 +40,8 @@
     { id: "2026-11-03", date: "Tuesday 3 November 2026",    time: "6:00–11:00 PM", place: "Upper West Side" },
     { id: "2026-11-20", date: "Friday 20 November 2026",    time: "6:00–11:00 PM", place: "Upper West Side" },
     { id: "2026-11-21", date: "Saturday 21 November 2026",  time: "6:00–11:00 PM", place: "Upper West Side" },
-    { id: "2026-12-11", date: "Friday 11 December 2026",    time: "6:00–11:00 PM", place: "Upper West Side" }
+    { id: "2026-12-11", date: "Friday 11 December 2026",    time: "6:30–11:30 PM", place: "Upper West Side" },
+    { id: "2026-12-12", date: "Saturday 12 December 2026",  time: "6:30–11:30 PM", place: "Upper West Side", full: true }
   ];
 
   /* ---------------------------------------------------------
